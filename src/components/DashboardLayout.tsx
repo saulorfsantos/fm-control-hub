@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import ProcessSelector from "@/components/ProcessSelector";
 import { useTheme } from "@/components/ThemeProvider";
 import {
@@ -20,17 +20,22 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
+import { ClipboardCheck } from "lucide-react";
+
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Prestação de Contas", icon: FileText },
-  { label: "Aquisições", icon: ShoppingCart },
-  { label: "Relatórios", icon: BarChart3 },
-  { label: "Configurações", icon: Settings },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/escola/dashboard" },
+  { label: "Checklist Documental", icon: ClipboardCheck, path: "/escola/checklist" },
+  { label: "Prestação de Contas", icon: FileText, path: "#" },
+  { label: "Aquisições", icon: ShoppingCart, path: "#" },
+  { label: "Relatórios", icon: BarChart3, path: "#" },
+  { label: "Configurações", icon: Settings, path: "#" },
 ];
 
 const DashboardLayout = () => {
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen">
@@ -69,20 +74,24 @@ const DashboardLayout = () => {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map((item, i) => (
-            <button
-              key={item.label}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors",
-                i === 0
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-              )}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = item.path !== "#" && location.pathname.startsWith(item.path);
+            return (
+              <button
+                key={item.label}
+                onClick={() => { if (item.path !== "#") { navigate(item.path); setSidebarOpen(false); } }}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                )}
+              >
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
 
         {/* School profile */}
