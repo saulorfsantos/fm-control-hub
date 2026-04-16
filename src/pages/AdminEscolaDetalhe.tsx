@@ -328,7 +328,7 @@ const AdminEscolaDetalhe = () => {
     return <Badge variant="secondary" className="font-normal text-xs">Upload manual</Badge>;
   };
 
-  if (loading) {
+  if (loading || !school) {
     return (
       <div className="space-y-4">
         <div className="h-6 w-48 rounded bg-muted animate-pulse" />
