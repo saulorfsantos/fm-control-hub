@@ -11,6 +11,7 @@ import AdminLayout from "./components/AdminLayout";
 import EscolaDashboard from "./pages/EscolaDashboard";
 import EscolaChecklist from "./pages/EscolaChecklist";
 import EscolaFinanceiro from "./pages/EscolaFinanceiro";
+import EscolaConselho from "./pages/EscolaConselho";
 import AdminEscolas from "./pages/AdminEscolas";
 import AdminEscolaDetalhe from "./pages/AdminEscolaDetalhe";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
                 <Route path="dashboard" element={<EscolaDashboard />} />
                 <Route path="checklist" element={<EscolaChecklist />} />
                 <Route path="financeiro" element={<EscolaFinanceiro />} />
+                <Route path="conselho" element={<EscolaConselho />} />
                 <Route index element={<Navigate to="dashboard" replace />} />
               </Route>
               <Route path="/admin" element={<AdminLayout />}>

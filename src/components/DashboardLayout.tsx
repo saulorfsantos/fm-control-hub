@@ -20,12 +20,13 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
-import { ClipboardCheck, Receipt } from "lucide-react";
+import { ClipboardCheck, Receipt, Users } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/escola/dashboard" },
   { label: "Checklist Documental", icon: ClipboardCheck, path: "/escola/checklist" },
   { label: "Movimentação Financeira", icon: Receipt, path: "/escola/financeiro" },
+  { label: "Dados do Conselho", icon: Users, path: "/escola/conselho" },
   { label: "Prestação de Contas", icon: FileText, path: "#" },
   { label: "Relatórios", icon: BarChart3, path: "#" },
   { label: "Configurações", icon: Settings, path: "#" },
