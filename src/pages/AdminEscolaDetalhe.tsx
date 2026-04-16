@@ -202,9 +202,28 @@ const AdminEscolaDetalhe = () => {
     }
   };
 
-  const school = mockSchools[schoolId || "1"] || mockSchools["1"];
+  const fetchSchool = async () => {
+    if (!schoolId) return;
+    const { data } = await supabase.from("schools").select("*").eq("id", schoolId).single();
+    if (data) {
+      setSchool({
+        name: data.name || "Sem nome",
+        type: data.type || "Municipal",
+        regional: data.regional || "—",
+        jurisdiction: data.jurisdiction || "—",
+        status: "Em análise",
+        cnpj: data.cnpj,
+        endereco: data.endereco,
+        telefone: data.telefone,
+        email: data.email,
+        diretor: data.diretor,
+        codigo_inep: data.codigo_inep,
+      });
+    }
+  };
 
   useEffect(() => {
+    fetchSchool();
     fetchProcessos();
     const t = setTimeout(() => {
       setChecklistItems(mockChecklistItems);
