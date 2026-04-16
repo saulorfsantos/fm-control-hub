@@ -77,6 +77,7 @@ const AddSchoolModal = ({ open, onOpenChange, onSuccess }: AddSchoolModalProps) 
       email: form.email.trim(),
       principal_name: form.principal_name.trim(),
       inep_code: form.inep_code.trim(),
+      type: "municipal",
     });
 
     setSaving(false);
