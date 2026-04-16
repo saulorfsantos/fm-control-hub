@@ -143,27 +143,27 @@ const EscolaDashboard = () => {
               {mockTransactions.map((tx, i) => (
                 <TableRow key={i}>
                   <TableCell className="text-xs text-muted-foreground">
-                    {tx.date}
+                    {tx.data}
                   </TableCell>
-                  <TableCell className="text-sm">{tx.description}</TableCell>
+                  <TableCell className="text-sm">{tx.descricao}</TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"
                       className={
-                        tx.type === "credit"
+                        tx.credito > 0
                           ? "text-status-ok border-status-ok/30 bg-status-ok/5"
                           : "text-status-error border-status-error/30 bg-status-error/5"
                       }
                     >
-                      {tx.type === "credit" ? "Crédito" : "Débito"}
+                      {tx.credito > 0 ? "Crédito" : "Débito"}
                     </Badge>
                   </TableCell>
                   <TableCell
                     className={`text-right font-mono text-sm font-medium ${
-                      tx.type === "credit" ? "text-status-ok" : "text-foreground"
+                      tx.credito > 0 ? "text-status-ok" : "text-foreground"
                     }`}
                   >
-                    {tx.type === "credit" ? "+" : "−"} {fmt(tx.value)}
+                    {tx.credito > 0 ? "+" : "−"} {fmt(tx.credito > 0 ? tx.credito : tx.debito)}
                   </TableCell>
                 </TableRow>
               ))}
