@@ -5,36 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  AlertTriangle,
-  UserPlus,
-  Pencil,
-  Check,
-  X,
-  Users,
-  Shield,
+  AlertTriangle, UserPlus, Pencil, Check, X, Users, Shield, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -44,6 +24,7 @@ interface Member {
   name: string;
   role: string;
   cpf: string;
+  whatsapp: string;
   signatureStatus: "signed" | "pending" | "expired";
 }
 
@@ -53,15 +34,22 @@ interface ConselhoData {
   members: Member[];
 }
 
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 const mockConselho: ConselhoData = {
   councilName: "Conselho Escolar da E.M. Monteiro Lobato",
   cnpj: "12.345.678/0001-90",
   members: [
-    { id: "1", name: "Maria Aparecida dos Santos", role: "Presidente", cpf: "***.***.123-45", signatureStatus: "signed" },
-    { id: "2", name: "José Carlos Oliveira", role: "Tesoureiro", cpf: "***.***.234-56", signatureStatus: "signed" },
-    { id: "3", name: "Ana Paula Ferreira Lima", role: "Secretária", cpf: "***.***.345-67", signatureStatus: "pending" },
-    { id: "4", name: "Francisco Almeida Souza", role: "Membro", cpf: "***.***.456-78", signatureStatus: "expired" },
-    { id: "5", name: "Cláudia Regina Martins", role: "Membro", cpf: "***.***.567-89", signatureStatus: "signed" },
+    { id: "1", name: "Maria Aparecida dos Santos", role: "Presidente", cpf: "***.***.123-45", whatsapp: "(85) 99812-3456", signatureStatus: "signed" },
+    { id: "2", name: "José Carlos Oliveira", role: "Tesoureiro", cpf: "***.***.234-56", whatsapp: "(85) 98765-4321", signatureStatus: "signed" },
+    { id: "3", name: "Ana Paula Ferreira Lima", role: "Secretária", cpf: "***.***.345-67", whatsapp: "(85) 99634-7890", signatureStatus: "pending" },
+    { id: "4", name: "Francisco Almeida Souza", role: "Membro", cpf: "***.***.456-78", whatsapp: "(85) 98456-1234", signatureStatus: "expired" },
+    { id: "5", name: "Cláudia Regina Martins", role: "Membro", cpf: "***.***.567-89", whatsapp: "(85) 99901-5678", signatureStatus: "signed" },
   ],
 };
 
@@ -95,11 +83,11 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
   const [editName, setEditName] = useState(conselho.councilName);
   const [editCnpj, setEditCnpj] = useState(conselho.cnpj);
 
-  // Add member modal
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState("");
   const [newCpf, setNewCpf] = useState("");
+  const [newWhatsapp, setNewWhatsapp] = useState("");
 
   const activeMembers = conselho.members.filter((m) => m.signatureStatus !== "expired");
   const hasMinMembers = activeMembers.length >= 3;
@@ -117,19 +105,25 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
       name: newName,
       role: newRole,
       cpf: newCpf,
+      whatsapp: newWhatsapp,
       signatureStatus: "pending",
     };
     setConselho((prev) => ({ ...prev, members: [...prev.members, member] }));
     setAddModalOpen(false);
-    setNewName("");
-    setNewRole("");
-    setNewCpf("");
+    setNewName(""); setNewRole(""); setNewCpf(""); setNewWhatsapp("");
     toast({ title: "Membro adicionado com sucesso!" });
+  };
+
+  const handleDeleteMember = (id: string) => {
+    setConselho((prev) => ({
+      ...prev,
+      members: prev.members.filter((m) => m.id !== id),
+    }));
+    toast({ title: "Membro removido.", variant: "destructive" });
   };
 
   return (
     <div className="space-y-6 max-w-4xl">
-      {/* Alert: Minimum members */}
       {!hasMinMembers && (
         <Alert className="border-brand-orange/50 bg-brand-orange/5">
           <AlertTriangle className="h-4 w-4 text-brand-orange" />
@@ -151,19 +145,16 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
             </div>
             {isAdmin && !editing && (
               <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-                <Pencil className="w-3.5 h-3.5" />
-                Editar
+                <Pencil className="w-3.5 h-3.5" /> Editar
               </Button>
             )}
             {isAdmin && editing && (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setEditName(conselho.councilName); setEditCnpj(conselho.cnpj); }}>
-                  <X className="w-3.5 h-3.5" />
-                  Cancelar
+                  <X className="w-3.5 h-3.5" /> Cancelar
                 </Button>
                 <Button size="sm" onClick={handleSaveGeneral}>
-                  <Check className="w-3.5 h-3.5" />
-                  Salvar
+                  <Check className="w-3.5 h-3.5" /> Salvar
                 </Button>
               </div>
             )}
@@ -202,8 +193,7 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
             </div>
             {isAdmin && (
               <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setAddModalOpen(true)}>
-                <UserPlus className="w-3.5 h-3.5" />
-                Adicionar membro
+                <UserPlus className="w-3.5 h-3.5" /> Adicionar membro
               </Button>
             )}
           </div>
@@ -214,9 +204,11 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead className="w-[130px]">Cargo</TableHead>
-                  <TableHead className="w-[150px]">CPF</TableHead>
-                  <TableHead className="w-[120px] text-center">Assinatura</TableHead>
+                  <TableHead className="w-[120px]">Cargo</TableHead>
+                  <TableHead className="w-[140px]">CPF</TableHead>
+                  <TableHead className="w-[150px]">WhatsApp</TableHead>
+                  <TableHead className="w-[110px] text-center">Assinatura</TableHead>
+                  {isAdmin && <TableHead className="w-[60px]" />}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -225,7 +217,20 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
                     <TableCell className="text-sm font-medium">{member.name}</TableCell>
                     <TableCell>{roleBadge(member.role)}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">{member.cpf}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{member.whatsapp || "—"}</TableCell>
                     <TableCell className="text-center">{signatureStatusBadge(member.signatureStatus)}</TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-status-error hover:text-status-error hover:bg-status-error/10"
+                          onClick={() => handleDeleteMember(member.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -234,14 +239,13 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Read-only notice for escola */}
       {!isAdmin && (
         <p className="text-xs text-muted-foreground text-center">
           Para alterar os dados do conselho, entre em contato com a administração Forte Mais.
         </p>
       )}
 
-      {/* Add Member Modal (Admin only) */}
+      {/* Add Member Modal */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -256,9 +260,7 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Cargo</label>
               <Select value={newRole} onValueChange={setNewRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o cargo" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Selecione o cargo" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Presidente">Presidente</SelectItem>
                   <SelectItem value="Vice-Presidente">Vice-Presidente</SelectItem>
@@ -272,6 +274,14 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">CPF</label>
               <Input placeholder="000.000.000-00" value={newCpf} onChange={(e) => setNewCpf(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">WhatsApp</label>
+              <Input
+                placeholder="(00) 00000-0000"
+                value={newWhatsapp}
+                onChange={(e) => setNewWhatsapp(formatPhone(e.target.value))}
+              />
             </div>
           </div>
           <DialogFooter>
