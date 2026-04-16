@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +24,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AddSchoolModal from "@/components/AddSchoolModal";
+import { supabase } from "@/lib/supabase";
 
 type SchoolStatus = "approved" | "pending" | "awaiting";
 
-interface MockSchool {
+interface SchoolItem {
   id: string;
   name: string;
-  type: "Estadual" | "Municipal";
+  type: string;
   regional: string;
   program: string;
   period: string;
@@ -40,15 +41,6 @@ interface MockSchool {
   checklistTotal: number;
   balance: number;
 }
-
-const mockSchools: MockSchool[] = [
-  { id: "1", name: "E.M. Monteiro Lobato", type: "Municipal", regional: "Regional Norte", program: "PNAE", period: "2025", parcel: "1ª Parcela", status: "approved", checklistDone: 7, checklistTotal: 7, balance: 12450.30 },
-  { id: "2", name: "E.E. Castro Alves", type: "Estadual", regional: "Regional Sul", program: "PNAE", period: "2025", parcel: "1ª Parcela", status: "pending", checklistDone: 3, checklistTotal: 7, balance: 5820.00 },
-  { id: "3", name: "E.M. Cecília Meireles", type: "Municipal", regional: "Regional Leste", program: "PDDE", period: "2025", parcel: "Parcela Única", status: "awaiting", checklistDone: 5, checklistTotal: 7, balance: 28100.75 },
-  { id: "4", name: "E.E. Machado de Assis", type: "Estadual", regional: "Regional Norte", program: "PNAE", period: "2024", parcel: "2ª Parcela", status: "pending", checklistDone: 2, checklistTotal: 7, balance: -1340.00 },
-  { id: "5", name: "E.M. Vinícius de Moraes", type: "Municipal", regional: "Regional Oeste", program: "PNAE", period: "2025", parcel: "1ª Parcela", status: "approved", checklistDone: 7, checklistTotal: 7, balance: 9870.50 },
-  { id: "6", name: "E.E. Clarice Lispector", type: "Estadual", regional: "Regional Sul", program: "PDDE", period: "2025", parcel: "Parcela Única", status: "awaiting", checklistDone: 0, checklistTotal: 7, balance: 41200.00 },
-];
 
 const statusConfig: Record<SchoolStatus, { label: string; className: string }> = {
   approved: { label: "Aprovada", className: "bg-status-ok/15 text-status-ok border-0" },
@@ -61,6 +53,7 @@ const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", curren
 const AdminEscolas = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [schools, setSchools] = useState<SchoolItem[]>([]);
   const [search, setSearch] = useState("");
   const [regional, setRegional] = useState("all");
   const [program, setProgram] = useState("all");
@@ -68,13 +61,42 @@ const AdminEscolas = () => {
   const [year, setYear] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
 
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
+  const fetchSchools = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("schools")
+      .select("id, name, type, cnpj, address, phone, email, principal_name, inep_code")
+      .order("name");
+
+    if (error) {
+      console.error("Error fetching schools:", error);
+      setSchools([]);
+    } else {
+      setSchools(
+        (data || []).map((s: any) => ({
+          id: s.id,
+          name: s.name || "Sem nome",
+          type: s.type === "estadual" ? "Estadual" : "Municipal",
+          regional: "-",
+          program: "PNAE",
+          period: "2025",
+          parcel: "1ª Parcela",
+          status: "awaiting" as SchoolStatus,
+          checklistDone: 0,
+          checklistTotal: 7,
+          balance: 0,
+        }))
+      );
+    }
+    setLoading(false);
   }, []);
 
+  useEffect(() => {
+    fetchSchools();
+  }, [fetchSchools]);
+
   const filtered = useMemo(() => {
-    return mockSchools.filter((s) => {
+    return schools.filter((s) => {
       if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (regional !== "all" && s.regional !== regional) return false;
       if (program !== "all" && s.program !== program) return false;
@@ -82,15 +104,14 @@ const AdminEscolas = () => {
       if (year !== "all" && s.period !== year) return false;
       return true;
     });
-  }, [search, regional, program, status, year]);
+  }, [search, regional, program, status, year, schools]);
 
   const metrics = {
-    total: mockSchools.length,
-    approved: mockSchools.filter((s) => s.status === "approved").length,
-    pending: mockSchools.filter((s) => s.status === "pending").length,
-    awaiting: mockSchools.filter((s) => s.status === "awaiting").length,
+    total: schools.length,
+    approved: schools.filter((s) => s.status === "approved").length,
+    pending: schools.filter((s) => s.status === "pending").length,
+    awaiting: schools.filter((s) => s.status === "awaiting").length,
   };
-
   if (loading) {
     return (
       <div className="space-y-4">
@@ -118,7 +139,7 @@ const AdminEscolas = () => {
         </Button>
       </div>
 
-      <AddSchoolModal open={showAddModal} onOpenChange={setShowAddModal} />
+      <AddSchoolModal open={showAddModal} onOpenChange={setShowAddModal} onSuccess={fetchSchools} />
 
       {/* Filters — sticky */}
       <div className="sticky top-16 z-20 bg-background/95 backdrop-blur-sm -mx-4 md:-mx-6 px-4 md:px-6 py-3 border-b border-border">
