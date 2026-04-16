@@ -133,6 +133,7 @@ const AdminEscolaDetalhe = () => {
   const [loading, setLoading] = useState(true);
   const [creditModalOpen, setCreditModalOpen] = useState(false);
   const [creditValue, setCreditValue] = useState("");
+  const [conselhoTabActive, setConselhoTabActive] = useState(false);
   const [creditDate, setCreditDate] = useState("");
   const [creditLoading, setCreditLoading] = useState(false);
 
