@@ -12,7 +12,7 @@ import {
   Moon,
   Menu,
   X,
-  UtensilsCrossed,
+  Landmark,
   School,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
