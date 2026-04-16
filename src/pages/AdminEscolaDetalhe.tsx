@@ -190,7 +190,7 @@ const AdminEscolaDetalhe = () => {
       programa: processForm.programa,
       periodo: processForm.periodo,
       observacao: processForm.observacao,
-      status: "pending",
+      status: "Pendente",
     });
     setProcessLoading(false);
     if (error) {
@@ -485,7 +485,7 @@ const AdminEscolaDetalhe = () => {
                         <TableCell className="text-sm">{p.periodo}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">
-                            {p.status === "pending" ? "Pendente" : p.status === "approved" ? "Aprovado" : p.status}
+                            {p.status === "Pendente" ? "Pendente" : p.status === "Aprovado" ? "Aprovado" : p.status}
                           </Badge>
                         </TableCell>
                       </TableRow>
