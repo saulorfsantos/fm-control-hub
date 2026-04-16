@@ -50,11 +50,11 @@ const DashboardLayout = () => {
       >
         {/* Logo */}
         <div className="h-16 flex items-center gap-3 px-5 border-b border-sidebar-border">
-          <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-            <UtensilsCrossed className="w-4 h-4 text-sidebar-primary-foreground" />
+          <div className="w-8 h-8 rounded-lg bg-sidebar-accent flex items-center justify-center">
+            <Landmark className="w-4 h-4 text-brand-purple" />
           </div>
-          <span className="text-base font-heading font-bold text-sidebar-foreground">
-            PNAE Digital
+          <span className="text-sm font-heading font-bold text-sidebar-foreground tracking-tight leading-tight">
+            Portal de Transparência <span className="text-brand-orange text-xs font-semibold">Forte Mais</span>
           </span>
           <Button
             variant="ghost"
