@@ -444,7 +444,6 @@ const AdminEscolaDetalhe = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Código</TableHead>
                       <TableHead>Programa</TableHead>
                       <TableHead>Período</TableHead>
                       <TableHead>Status</TableHead>
@@ -453,8 +452,7 @@ const AdminEscolaDetalhe = () => {
                   <TableBody>
                     {processos.map((p) => (
                       <TableRow key={p.id}>
-                        <TableCell className="font-mono text-sm">{p.code}</TableCell>
-                        <TableCell className="text-sm">{p.programa}</TableCell>
+                        <TableCell className="text-sm font-medium">{p.programa}</TableCell>
                         <TableCell className="text-sm">{p.periodo}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">
