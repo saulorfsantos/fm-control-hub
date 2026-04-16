@@ -33,6 +33,10 @@ const App = () => (
                 <Route path="financeiro" element={<EscolaFinanceiro />} />
                 <Route index element={<Navigate to="dashboard" replace />} />
               </Route>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route path="escolas" element={<AdminEscolas />} />
+                <Route index element={<Navigate to="escolas" replace />} />
+              </Route>
               {/* Keep old route for compat */}
               <Route path="/dashboard" element={<Navigate to="/escola/dashboard" replace />} />
               <Route path="*" element={<NotFound />} />
