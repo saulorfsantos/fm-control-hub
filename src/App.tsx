@@ -7,9 +7,11 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProcessProvider } from "@/contexts/ProcessContext";
 import Login from "./pages/Login";
 import DashboardLayout from "./components/DashboardLayout";
+import AdminLayout from "./components/AdminLayout";
 import EscolaDashboard from "./pages/EscolaDashboard";
 import EscolaChecklist from "./pages/EscolaChecklist";
 import EscolaFinanceiro from "./pages/EscolaFinanceiro";
+import AdminEscolas from "./pages/AdminEscolas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
