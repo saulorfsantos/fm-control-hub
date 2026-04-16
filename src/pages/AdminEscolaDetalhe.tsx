@@ -229,11 +229,17 @@ const AdminEscolaDetalhe = () => {
     fetchProcessos();
     const t = setTimeout(() => {
       setChecklistItems(mockChecklistItems);
-      setTransactions(mockTransactions);
       setLoading(false);
     }, 600);
     return () => clearTimeout(t);
   }, [schoolId]);
+
+  // Auto-select first process when list loads
+  useEffect(() => {
+    if (!selectedProcessId && processos.length > 0) {
+      setSelectedProcessId(processos[0].id);
+    }
+  }, [processos, selectedProcessId]);
 
   // ——— Checklist helpers ———
   const doneCount = checklistItems.filter((i) => i.status === "done").length;
