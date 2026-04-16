@@ -110,9 +110,9 @@ const AdminEscolas = () => {
       </div>
 
       {/* Filters — sticky */}
-      <div className="sticky top-16 z-20 bg-background/95 backdrop-blur-sm -mx-6 px-6 py-3 border-b border-border">
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
+      <div className="sticky top-16 z-20 bg-background/95 backdrop-blur-sm -mx-4 md:-mx-6 px-4 md:px-6 py-3 border-b border-border">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+          <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar escola..."
@@ -121,41 +121,43 @@ const AdminEscolas = () => {
               className="pl-9"
             />
           </div>
-          <Select value={regional} onValueChange={setRegional}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Regional" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas regionais</SelectItem>
-              <SelectItem value="Regional Norte">Regional Norte</SelectItem>
-              <SelectItem value="Regional Sul">Regional Sul</SelectItem>
-              <SelectItem value="Regional Leste">Regional Leste</SelectItem>
-              <SelectItem value="Regional Oeste">Regional Oeste</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={program} onValueChange={setProgram}>
-            <SelectTrigger className="w-[140px]"><SelectValue placeholder="Programa" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="PNAE">PNAE</SelectItem>
-              <SelectItem value="PDDE">PDDE</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos status</SelectItem>
-              <SelectItem value="approved">Aprovada</SelectItem>
-              <SelectItem value="pending">Com pendências</SelectItem>
-              <SelectItem value="awaiting">Aguardando protocolo</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger className="w-[120px]"><SelectValue placeholder="Ano" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos anos</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 sm:flex gap-3">
+            <Select value={regional} onValueChange={setRegional}>
+              <SelectTrigger className="sm:w-[160px]"><SelectValue placeholder="Regional" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas regionais</SelectItem>
+                <SelectItem value="Regional Norte">Regional Norte</SelectItem>
+                <SelectItem value="Regional Sul">Regional Sul</SelectItem>
+                <SelectItem value="Regional Leste">Regional Leste</SelectItem>
+                <SelectItem value="Regional Oeste">Regional Oeste</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={program} onValueChange={setProgram}>
+              <SelectTrigger className="sm:w-[140px]"><SelectValue placeholder="Programa" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="PNAE">PNAE</SelectItem>
+                <SelectItem value="PDDE">PDDE</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="sm:w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos status</SelectItem>
+                <SelectItem value="approved">Aprovada</SelectItem>
+                <SelectItem value="pending">Com pendências</SelectItem>
+                <SelectItem value="awaiting">Aguardando protocolo</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={year} onValueChange={setYear}>
+              <SelectTrigger className="sm:w-[120px]"><SelectValue placeholder="Ano" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos anos</SelectItem>
+                <SelectItem value="2025">2025</SelectItem>
+                <SelectItem value="2024">2024</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 

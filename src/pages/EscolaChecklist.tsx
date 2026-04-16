@@ -223,7 +223,7 @@ const EscolaChecklist = () => {
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+                <p className="text-sm font-medium text-foreground truncate sm:whitespace-normal">{item.name}</p>
                 <div className="flex items-center gap-2 mt-1">
                   {typeBadge(item.type)}
                   {statusBadge(item.status)}
