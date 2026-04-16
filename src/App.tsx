@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import DashboardLayout from "./components/DashboardLayout";
 import EscolaDashboard from "./pages/EscolaDashboard";
 import EscolaChecklist from "./pages/EscolaChecklist";
+import EscolaFinanceiro from "./pages/EscolaFinanceiro";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/escola" element={<DashboardLayout />}>
                 <Route path="dashboard" element={<EscolaDashboard />} />
                 <Route path="checklist" element={<EscolaChecklist />} />
+                <Route path="financeiro" element={<EscolaFinanceiro />} />
                 <Route index element={<Navigate to="dashboard" replace />} />
               </Route>
               {/* Keep old route for compat */}
