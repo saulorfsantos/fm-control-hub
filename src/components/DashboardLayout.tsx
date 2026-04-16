@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import ProcessSelector from "@/components/ProcessSelector";
 import { useTheme } from "@/components/ThemeProvider";
 import {
   LayoutDashboard,
@@ -118,6 +119,7 @@ const DashboardLayout = () => {
           <h1 className="text-lg font-heading font-semibold text-foreground">
             Dashboard
           </h1>
+          <ProcessSelector />
 
           <div className="ml-auto flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={toggleTheme}>
