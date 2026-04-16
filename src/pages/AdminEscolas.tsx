@@ -20,8 +20,10 @@ import {
   AlertTriangle,
   Clock,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AddSchoolModal from "@/components/AddSchoolModal";
 
 type SchoolStatus = "approved" | "pending" | "awaiting";
 
@@ -64,6 +66,7 @@ const AdminEscolas = () => {
   const [program, setProgram] = useState("all");
   const [status, setStatus] = useState("all");
   const [year, setYear] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
@@ -104,10 +107,18 @@ const AdminEscolas = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-heading font-bold text-foreground">Escolas da Rede</h2>
-        <p className="text-sm text-muted-foreground mt-1">Gerencie a prestação de contas de todas as unidades</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-heading font-bold text-foreground">Escolas da Rede</h2>
+          <p className="text-sm text-muted-foreground mt-1">Gerencie a prestação de contas de todas as unidades</p>
+        </div>
+        <Button onClick={() => setShowAddModal(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Adicionar Escola
+        </Button>
       </div>
+
+      <AddSchoolModal open={showAddModal} onOpenChange={setShowAddModal} />
 
       {/* Filters — sticky */}
       <div className="sticky top-16 z-20 bg-background/95 backdrop-blur-sm -mx-4 md:-mx-6 px-4 md:px-6 py-3 border-b border-border">
