@@ -177,6 +177,7 @@ const AdminEscolaDetalhe = () => {
     setProcessLoading(true);
     const { error } = await supabase.from("accountability_processes").insert({
       school_id: schoolId,
+      reference_period: processForm.periodo || new Date().getFullYear().toString(),
       programa: processForm.programa,
       periodo: processForm.periodo,
       observacao: processForm.observacao,
