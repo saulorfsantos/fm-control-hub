@@ -177,7 +177,6 @@ const AdminEscolaDetalhe = () => {
     setProcessLoading(true);
     const { error } = await supabase.from("accountability_processes").insert({
       school_id: schoolId,
-      code: processForm.code || `${processForm.programa}-${processForm.periodo}`,
       programa: processForm.programa,
       periodo: processForm.periodo,
       observacao: processForm.observacao,
