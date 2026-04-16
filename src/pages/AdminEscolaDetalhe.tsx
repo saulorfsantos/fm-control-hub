@@ -579,83 +579,119 @@ const AdminEscolaDetalhe = () => {
         <TabsContent value="financeiro" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3 flex-wrap">
+              <Select value={selectedProcessId ?? ""} onValueChange={setSelectedProcessId}>
+                <SelectTrigger className="w-[240px]">
+                  <SelectValue placeholder="Selecione um processo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {processos.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.programa || "—"} {p.periodo || p.reference_period || ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
               <Button variant="outline" className="border-primary text-primary hover:bg-primary/10" onClick={handleExport} disabled={exporting}>
                 {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 Exportar demonstrativo PDF
               </Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setCreditModalOpen(true)}>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setCreditModalOpen(true)} disabled={!selectedProcessId}>
                 <PlusCircle className="w-4 h-4" />
                 Lançar Crédito (Ordem Bancária)
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="shadow-none border-brand-orange/20 bg-brand-orange/5">
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="w-10 h-10 rounded-lg bg-brand-orange/10 flex items-center justify-center"><TrendingUp className="w-5 h-5 text-brand-orange" /></div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Total de Créditos</p>
-                  <p className="text-lg font-mono font-bold text-brand-orange">{fmt(totalCredits)}</p>
-                </div>
-              </CardContent>
-            </Card>
+          {!selectedProcessId ? (
             <Card className="shadow-none">
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center"><TrendingDown className="w-5 h-5 text-muted-foreground" /></div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Total de Débitos</p>
-                  <p className="text-lg font-mono font-bold text-muted-foreground">{fmt(totalDebits)}</p>
-                </div>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <FileText className="w-10 h-10 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">Selecione um processo acima para ver as transações.</p>
               </CardContent>
             </Card>
-            <Card className={cn("shadow-none", currentBalance >= 0 ? "border-status-ok/20 bg-status-ok/5" : "border-destructive/20 bg-destructive/5")}>
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", currentBalance >= 0 ? "bg-status-ok/10" : "bg-destructive/10")}>
-                  <Wallet className={cn("w-5 h-5", currentBalance >= 0 ? "text-status-ok" : "text-destructive")} />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Saldo Atual</p>
-                  <p className={cn("text-lg font-mono font-bold", currentBalance >= 0 ? "text-status-ok" : "text-destructive")}>{fmt(currentBalance)}</p>
-                </div>
+          ) : txLoading ? (
+            <div className="h-64 rounded-xl bg-muted animate-pulse" />
+          ) : dbTransactions.length === 0 ? (
+            <Card className="shadow-none">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <FileText className="w-10 h-10 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">Nenhuma transação encontrada para este processo.</p>
               </CardContent>
             </Card>
-          </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card className="shadow-none border-brand-orange/20 bg-brand-orange/5">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className="w-10 h-10 rounded-lg bg-brand-orange/10 flex items-center justify-center"><TrendingUp className="w-5 h-5 text-brand-orange" /></div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total de Créditos</p>
+                      <p className="text-lg font-mono font-bold text-brand-orange">{fmt(totalCredits)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="shadow-none">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center"><TrendingDown className="w-5 h-5 text-muted-foreground" /></div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total de Débitos</p>
+                      <p className="text-lg font-mono font-bold text-muted-foreground">{fmt(totalDebits)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className={cn("shadow-none", currentBalance >= 0 ? "border-status-ok/20 bg-status-ok/5" : "border-destructive/20 bg-destructive/5")}>
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", currentBalance >= 0 ? "bg-status-ok/10" : "bg-destructive/10")}>
+                      <Wallet className={cn("w-5 h-5", currentBalance >= 0 ? "text-status-ok" : "text-destructive")} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Saldo Atual</p>
+                      <p className={cn("text-lg font-mono font-bold", currentBalance >= 0 ? "text-status-ok" : "text-destructive")}>{fmt(currentBalance)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-          <Card className="shadow-none overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Data</TableHead>
-                    <TableHead>Histórico</TableHead>
-                    <TableHead className="w-[110px]">Doc. Nº</TableHead>
-                    <TableHead className="text-right w-[130px]">Débito</TableHead>
-                    <TableHead className="text-right w-[130px]">Crédito</TableHead>
-                    <TableHead className="text-right w-[140px]">Saldo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((row) => (
-                    <TableRow key={row.id} className={cn(row.credit > 0 && "bg-status-ok/[0.04]")}>
-                      <TableCell className="font-mono text-xs">{fmtDate(row.date)}</TableCell>
-                      <TableCell className="text-sm">{row.description}</TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">{row.docNumber}</TableCell>
-                      <TableCell className="text-right font-mono text-sm">{row.debit > 0 ? fmt(row.debit) : "—"}</TableCell>
-                      <TableCell className="text-right font-mono text-sm">{row.credit > 0 ? fmt(row.credit) : "—"}</TableCell>
-                      <TableCell className={cn("text-right font-mono text-sm font-medium", row.balance >= 0 ? "text-status-ok" : "text-destructive")}>{fmt(row.balance)}</TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow className="border-t-2 border-border bg-muted/50 font-bold">
-                    <TableCell /><TableCell className="text-sm font-semibold">TOTAL</TableCell><TableCell />
-                    <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalDebits)}</TableCell>
-                    <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalCredits)}</TableCell>
-                    <TableCell className={cn("text-right font-mono text-sm font-bold", currentBalance >= 0 ? "text-status-ok" : "text-destructive")}>{fmt(currentBalance)}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
+              <Card className="shadow-none overflow-hidden">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[100px]">Data</TableHead>
+                        <TableHead>Histórico</TableHead>
+                        <TableHead className="w-[110px]">Doc. Nº</TableHead>
+                        <TableHead className="w-[130px]">Empresa</TableHead>
+                        <TableHead className="text-right w-[130px]">Débito</TableHead>
+                        <TableHead className="text-right w-[130px]">Crédito</TableHead>
+                        <TableHead className="text-right w-[140px]">Saldo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rows.map((row) => (
+                        <TableRow key={row.id} className={cn(Number(row.credito) > 0 && "bg-status-ok/[0.04]")}>
+                          <TableCell className="font-mono text-xs">{fmtDate(row.data)}</TableCell>
+                          <TableCell className="text-sm">{row.descricao}</TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">{row.documento ?? "—"}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{row.empresa ?? "—"}</TableCell>
+                          <TableCell className="text-right font-mono text-sm">{Number(row.debito) > 0 ? fmt(Number(row.debito)) : "—"}</TableCell>
+                          <TableCell className="text-right font-mono text-sm">{Number(row.credito) > 0 ? fmt(Number(row.credito)) : "—"}</TableCell>
+                          <TableCell className={cn("text-right font-mono text-sm font-medium", row.balance >= 0 ? "text-status-ok" : "text-destructive")}>{fmt(row.balance)}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="border-t-2 border-border bg-muted/50 font-bold">
+                        <TableCell /><TableCell className="text-sm font-semibold">TOTAL</TableCell><TableCell /><TableCell />
+                        <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalDebits)}</TableCell>
+                        <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalCredits)}</TableCell>
+                        <TableCell className={cn("text-right font-mono text-sm font-bold", currentBalance >= 0 ? "text-status-ok" : "text-destructive")}>{fmt(currentBalance)}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
+            </>
+          )}
         </TabsContent>
 
         {/* ——— TAB: Conselho (Admin) ——— */}
