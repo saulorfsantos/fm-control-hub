@@ -285,13 +285,13 @@ const AdminEscolaDetalhe = () => {
     toast({ title: "Item marcado como N/A" });
   };
 
-  // ——— Financeiro helpers ———
-  const rows = transactions.map((tx, i) => {
-    const prevBalance = transactions.slice(0, i).reduce((acc, t) => acc + t.credit - t.debit, 0);
-    return { ...tx, balance: prevBalance + tx.credit - tx.debit };
+  // ——— Financeiro helpers (real DB schema: data, descricao, documento, debito, credito, empresa) ———
+  const rows = dbTransactions.map((tx, i) => {
+    const prevBalance = dbTransactions.slice(0, i).reduce((acc, t) => acc + Number(t.credito) - Number(t.debito), 0);
+    return { ...tx, balance: prevBalance + Number(tx.credito) - Number(tx.debito) };
   });
-  const totalCredits = transactions.reduce((s, t) => s + t.credit, 0);
-  const totalDebits = transactions.reduce((s, t) => s + t.debit, 0);
+  const totalCredits = dbTransactions.reduce((s, t) => s + Number(t.credito), 0);
+  const totalDebits = dbTransactions.reduce((s, t) => s + Number(t.debito), 0);
   const currentBalance = totalCredits - totalDebits;
 
   const handleExport = async () => {
@@ -302,23 +302,28 @@ const AdminEscolaDetalhe = () => {
   };
 
   const handleLancarCredito = async () => {
-    if (!creditValue || !creditDate) return;
+    if (!creditValue || !creditDate || !selectedProcessId) return;
     setCreditLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    const newTx: Transaction = {
-      id: String(transactions.length + 1),
-      date: creditDate,
-      description: "Ordem Bancária — Crédito lançado pelo Admin",
-      docNumber: `OB-${String(transactions.length + 1).padStart(4, "0")}`,
-      debit: 0,
-      credit: parseFloat(creditValue.replace(/[^\d.,]/g, "").replace(",", ".")),
-    };
-    setTransactions((prev) => [...prev, newTx].sort((a, b) => a.date.localeCompare(b.date)));
+    const credito = parseFloat(creditValue.replace(/[^\d.,]/g, "").replace(",", "."));
+    const { error } = await supabase.from("financial_transactions").insert({
+      process_id: selectedProcessId,
+      data: creditDate,
+      descricao: "Ordem Bancária — Crédito lançado pelo Admin",
+      documento: `OB-${Date.now().toString().slice(-6)}`,
+      empresa: "Admin",
+      debito: 0,
+      credito,
+    });
     setCreditLoading(false);
+    if (error) {
+      toast({ title: "Erro ao lançar crédito", description: error.message, variant: "destructive" });
+      return;
+    }
     setCreditModalOpen(false);
     setCreditValue("");
     setCreditDate("");
-    toast({ title: "Crédito lançado com sucesso!", description: fmt(newTx.credit) });
+    toast({ title: "Crédito lançado com sucesso!", description: fmt(credito) });
+    refetchTx();
   };
 
   const balancePositive = mockMetrics.balance >= 0;
