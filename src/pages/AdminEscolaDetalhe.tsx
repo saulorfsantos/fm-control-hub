@@ -340,10 +340,16 @@ const AdminEscolaDetalhe = () => {
             <span className="text-xs text-muted-foreground">• {school.type}</span>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="shrink-0" onClick={() => setActiveTab("conselho")}>
-          <Pencil className="w-4 h-4" />
-          Editar dados da escola
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" size="sm" onClick={() => setProcessModalOpen(true)}>
+            <PlusCircle className="w-4 h-4" />
+            Novo Processo
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setActiveTab("conselho")}>
+            <Pencil className="w-4 h-4" />
+            Editar dados
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
