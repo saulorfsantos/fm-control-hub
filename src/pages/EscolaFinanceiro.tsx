@@ -17,23 +17,23 @@ import { toast } from "@/hooks/use-toast";
 
 interface Transaction {
   id: string;
-  date: string;
-  description: string;
-  docNumber: string;
+  data: string;
+  descricao: string;
+  documento: string;
   company: string;
-  debit: number;
-  credit: number;
+  debito: number;
+  credito: number;
 }
 
 const mockTransactions: Transaction[] = [
-  { id: "1", date: "2025-02-10", description: "Repasse FNDE — Nota de Empenho nº 2025NE000412", docNumber: "NE-000412", company: "FNDE", debit: 0, credit: 37800.0 },
-  { id: "2", date: "2025-02-28", description: "Rendimento de aplicação financeira", docNumber: "APL-0021", company: "BB S/A", debit: 0, credit: 112.45 },
-  { id: "3", date: "2025-03-05", description: "Pgto NF 1021 — Distribuidora Alimentos Sabor & Vida Ltda", docNumber: "NF-1021", company: "DASV Ltda", debit: 8450.0, credit: 0 },
-  { id: "4", date: "2025-03-12", description: "Pgto NF 1034 — Hortifruti Colheita Verde ME", docNumber: "NF-1034", company: "HCV ME", debit: 5230.0, credit: 0 },
-  { id: "5", date: "2025-03-20", description: "Pgto NF 1048 — Panificadora Pão Dourado Ltda", docNumber: "NF-1048", company: "PPD Ltda", debit: 3180.0, credit: 0 },
-  { id: "6", date: "2025-04-02", description: "Repasse FNDE — Nota de Empenho nº 2025NE000587", docNumber: "NE-000587", company: "FNDE", debit: 0, credit: 37800.0 },
-  { id: "7", date: "2025-04-10", description: "Pgto NF 1102 — Frigorífico Boi Nobre S/A", docNumber: "NF-1102", company: "FBN S/A", debit: 12600.0, credit: 0 },
-  { id: "8", date: "2025-04-18", description: "Pgto NF 1115 — Cooperativa Agrícola Raízes do Campo", docNumber: "NF-1115", company: "CARC", debit: 6950.0, credit: 0 },
+  { id: "1", data: "2025-02-10", descricao: "Repasse FNDE — Nota de Empenho nº 2025NE000412", documento: "NE-000412", company: "FNDE", debito: 0, credito: 37800.0 },
+  { id: "2", data: "2025-02-28", descricao: "Rendimento de aplicação financeira", documento: "APL-0021", company: "BB S/A", debito: 0, credito: 112.45 },
+  { id: "3", data: "2025-03-05", descricao: "Pgto NF 1021 — Distribuidora Alimentos Sabor & Vida Ltda", documento: "NF-1021", company: "DASV Ltda", debito: 8450.0, credito: 0 },
+  { id: "4", data: "2025-03-12", descricao: "Pgto NF 1034 — Hortifruti Colheita Verde ME", documento: "NF-1034", company: "HCV ME", debito: 5230.0, credito: 0 },
+  { id: "5", data: "2025-03-20", descricao: "Pgto NF 1048 — Panificadora Pão Dourado Ltda", documento: "NF-1048", company: "PPD Ltda", debito: 3180.0, credito: 0 },
+  { id: "6", data: "2025-04-02", descricao: "Repasse FNDE — Nota de Empenho nº 2025NE000587", documento: "NE-000587", company: "FNDE", debito: 0, credito: 37800.0 },
+  { id: "7", data: "2025-04-10", descricao: "Pgto NF 1102 — Frigorífico Boi Nobre S/A", documento: "NF-1102", company: "FBN S/A", debito: 12600.0, credito: 0 },
+  { id: "8", data: "2025-04-18", descricao: "Pgto NF 1115 — Cooperativa Agrícola Raízes do Campo", documento: "NF-1115", company: "CARC", debito: 6950.0, credito: 0 },
 ];
 
 const fmt = (v: number) =>
@@ -75,13 +75,13 @@ const EscolaFinanceiro = () => {
 
   // Compute running balance
   const rows = transactions.map((tx, i) => {
-    const prevBalance = transactions.slice(0, i).reduce((acc, t) => acc + t.credit - t.debit, 0);
-    const balance = prevBalance + tx.credit - tx.debit;
+    const prevBalance = transactions.slice(0, i).reduce((acc, t) => acc + t.credito - t.debito, 0);
+    const balance = prevBalance + tx.credito - tx.debito;
     return { ...tx, balance };
   });
 
-  const totalCredits = transactions.reduce((s, t) => s + t.credit, 0);
-  const totalDebits = transactions.reduce((s, t) => s + t.debit, 0);
+  const totalCredits = transactions.reduce((s, t) => s + t.credito, 0);
+  const totalDebits = transactions.reduce((s, t) => s + t.debito, 0);
   const currentBalance = totalCredits - totalDebits;
 
   const handleExport = async () => {
@@ -185,17 +185,17 @@ const EscolaFinanceiro = () => {
               {rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className={cn(row.credit > 0 && "bg-status-ok/[0.04]")}
+                  className={cn(row.credito > 0 && "bg-status-ok/[0.04]")}
                 >
-                  <TableCell className="font-mono text-xs">{fmtDate(row.date)}</TableCell>
-                  <TableCell className="text-sm">{row.description}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{row.docNumber}</TableCell>
+                  <TableCell className="font-mono text-xs">{fmtDate(row.data)}</TableCell>
+                  <TableCell className="text-sm">{row.descricao}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{row.documento}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{row.company}</TableCell>
                   <TableCell className="text-right font-mono text-sm">
-                    {row.debit > 0 ? fmt(row.debit) : "—"}
+                    {row.debito > 0 ? fmt(row.debito) : "—"}
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm">
-                    {row.credit > 0 ? fmt(row.credit) : "—"}
+                    {row.credito > 0 ? fmt(row.credito) : "—"}
                   </TableCell>
                   <TableCell className={cn("text-right font-mono text-sm font-medium", row.balance >= 0 ? "text-status-ok" : "text-destructive")}>
                     {fmt(row.balance)}
