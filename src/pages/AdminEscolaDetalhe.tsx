@@ -134,6 +134,7 @@ const AdminEscolaDetalhe = () => {
   const [creditModalOpen, setCreditModalOpen] = useState(false);
   const [creditValue, setCreditValue] = useState("");
   const [conselhoTabActive, setConselhoTabActive] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const [creditDate, setCreditDate] = useState("");
   const [creditLoading, setCreditLoading] = useState(false);
 
@@ -292,14 +293,14 @@ const AdminEscolaDetalhe = () => {
             <span className="text-xs text-muted-foreground">• {school.type}</span>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="shrink-0">
+        <Button variant="outline" size="sm" className="shrink-0" onClick={() => setActiveTab("conselho")}>
           <Pencil className="w-4 h-4" />
           Editar dados da escola
         </Button>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6" onValueChange={(v) => { if (v === "conselho") setConselhoTabActive(true); }}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="checklist">Checklist</TabsTrigger>
