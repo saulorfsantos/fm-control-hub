@@ -48,10 +48,10 @@ const Login = () => {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 justify-center mb-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-orange flex items-center justify-center">
-              <UtensilsCrossed className="w-5 h-5 text-sidebar-primary-foreground" />
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <Landmark className="w-5 h-5 text-brand-purple" />
             </div>
-            <span className="text-xl font-heading font-bold text-foreground">PNAE Digital</span>
+            <span className="text-xl font-heading font-bold text-foreground tracking-tight">Portal de Transparência <span className="text-brand-orange">Forte Mais</span></span>
           </div>
 
           <div className="space-y-2 text-center lg:text-left">
