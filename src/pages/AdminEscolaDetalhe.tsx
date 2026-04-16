@@ -190,7 +190,7 @@ const AdminEscolaDetalhe = () => {
       programa: processForm.programa,
       periodo: processForm.periodo,
       observacao: processForm.observacao,
-      status: "Pendente",
+      status: "Em análise",
     });
     setProcessLoading(false);
     if (error) {
