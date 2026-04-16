@@ -12,6 +12,7 @@ import EscolaDashboard from "./pages/EscolaDashboard";
 import EscolaChecklist from "./pages/EscolaChecklist";
 import EscolaFinanceiro from "./pages/EscolaFinanceiro";
 import AdminEscolas from "./pages/AdminEscolas";
+import AdminEscolaDetalhe from "./pages/AdminEscolaDetalhe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
               </Route>
               <Route path="/admin" element={<AdminLayout />}>
                 <Route path="escolas" element={<AdminEscolas />} />
+                <Route path="escola/:schoolId" element={<AdminEscolaDetalhe />} />
                 <Route index element={<Navigate to="escolas" replace />} />
               </Route>
               {/* Keep old route for compat */}
