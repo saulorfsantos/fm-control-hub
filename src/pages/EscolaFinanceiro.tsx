@@ -20,19 +20,20 @@ interface Transaction {
   date: string;
   description: string;
   docNumber: string;
+  company: string;
   debit: number;
   credit: number;
 }
 
 const mockTransactions: Transaction[] = [
-  { id: "1", date: "2025-02-10", description: "Repasse FNDE — Nota de Empenho nº 2025NE000412", docNumber: "NE-000412", debit: 0, credit: 37800.0 },
-  { id: "2", date: "2025-02-28", description: "Rendimento de aplicação financeira", docNumber: "APL-0021", debit: 0, credit: 112.45 },
-  { id: "3", date: "2025-03-05", description: "Pgto NF 1021 — Distribuidora Alimentos Sabor & Vida Ltda", docNumber: "NF-1021", debit: 8450.0, credit: 0 },
-  { id: "4", date: "2025-03-12", description: "Pgto NF 1034 — Hortifruti Colheita Verde ME", docNumber: "NF-1034", debit: 5230.0, credit: 0 },
-  { id: "5", date: "2025-03-20", description: "Pgto NF 1048 — Panificadora Pão Dourado Ltda", docNumber: "NF-1048", debit: 3180.0, credit: 0 },
-  { id: "6", date: "2025-04-02", description: "Repasse FNDE — Nota de Empenho nº 2025NE000587", docNumber: "NE-000587", debit: 0, credit: 37800.0 },
-  { id: "7", date: "2025-04-10", description: "Pgto NF 1102 — Frigorífico Boi Nobre S/A", docNumber: "NF-1102", debit: 12600.0, credit: 0 },
-  { id: "8", date: "2025-04-18", description: "Pgto NF 1115 — Cooperativa Agrícola Raízes do Campo", docNumber: "NF-1115", debit: 6950.0, credit: 0 },
+  { id: "1", date: "2025-02-10", description: "Repasse FNDE — Nota de Empenho nº 2025NE000412", docNumber: "NE-000412", company: "FNDE", debit: 0, credit: 37800.0 },
+  { id: "2", date: "2025-02-28", description: "Rendimento de aplicação financeira", docNumber: "APL-0021", company: "BB S/A", debit: 0, credit: 112.45 },
+  { id: "3", date: "2025-03-05", description: "Pgto NF 1021 — Distribuidora Alimentos Sabor & Vida Ltda", docNumber: "NF-1021", company: "DASV Ltda", debit: 8450.0, credit: 0 },
+  { id: "4", date: "2025-03-12", description: "Pgto NF 1034 — Hortifruti Colheita Verde ME", docNumber: "NF-1034", company: "HCV ME", debit: 5230.0, credit: 0 },
+  { id: "5", date: "2025-03-20", description: "Pgto NF 1048 — Panificadora Pão Dourado Ltda", docNumber: "NF-1048", company: "PPD Ltda", debit: 3180.0, credit: 0 },
+  { id: "6", date: "2025-04-02", description: "Repasse FNDE — Nota de Empenho nº 2025NE000587", docNumber: "NE-000587", company: "FNDE", debit: 0, credit: 37800.0 },
+  { id: "7", date: "2025-04-10", description: "Pgto NF 1102 — Frigorífico Boi Nobre S/A", docNumber: "NF-1102", company: "FBN S/A", debit: 12600.0, credit: 0 },
+  { id: "8", date: "2025-04-18", description: "Pgto NF 1115 — Cooperativa Agrícola Raízes do Campo", docNumber: "NF-1115", company: "CARC", debit: 6950.0, credit: 0 },
 ];
 
 const fmt = (v: number) =>
@@ -174,6 +175,7 @@ const EscolaFinanceiro = () => {
                 <TableHead className="w-[100px]">Data</TableHead>
                 <TableHead>Histórico</TableHead>
                 <TableHead className="w-[110px]">Doc. Nº</TableHead>
+                <TableHead className="w-[110px]">Empresa</TableHead>
                 <TableHead className="text-right w-[130px]">Débito</TableHead>
                 <TableHead className="text-right w-[130px]">Crédito</TableHead>
                 <TableHead className="text-right w-[140px]">Saldo</TableHead>
@@ -188,6 +190,7 @@ const EscolaFinanceiro = () => {
                   <TableCell className="font-mono text-xs">{fmtDate(row.date)}</TableCell>
                   <TableCell className="text-sm">{row.description}</TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground">{row.docNumber}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{row.company}</TableCell>
                   <TableCell className="text-right font-mono text-sm">
                     {row.debit > 0 ? fmt(row.debit) : "—"}
                   </TableCell>
@@ -204,6 +207,7 @@ const EscolaFinanceiro = () => {
               <TableRow className="border-t-2 border-border bg-muted/50 font-bold">
                 <TableCell />
                 <TableCell className="text-sm font-semibold">TOTAL</TableCell>
+                <TableCell />
                 <TableCell />
                 <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalDebits)}</TableCell>
                 <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalCredits)}</TableCell>
