@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         heading: ["Sora", "sans-serif"],
         body: ["DM Sans", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
