@@ -196,13 +196,14 @@ const AdminEscolaDetalhe = () => {
   const school = mockSchools[schoolId || "1"] || mockSchools["1"];
 
   useEffect(() => {
+    fetchProcessos();
     const t = setTimeout(() => {
       setChecklistItems(mockChecklistItems);
       setTransactions(mockTransactions);
       setLoading(false);
     }, 600);
     return () => clearTimeout(t);
-  }, []);
+  }, [schoolId]);
 
   // ——— Checklist helpers ———
   const doneCount = checklistItems.filter((i) => i.status === "done").length;
