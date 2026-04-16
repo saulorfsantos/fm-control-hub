@@ -64,12 +64,19 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
-// ——— Mock school data keyed by ID ———
-const mockSchools: Record<string, { name: string; type: string; regional: string; jurisdiction: string; status: string; program: string }> = {
-  "1": { name: "E.M. Monteiro Lobato", type: "Municipal", regional: "Regional Norte", jurisdiction: "SEDUC-AM", status: "Em análise", program: "PNAE — 1ª Parcela/2025" },
-  "2": { name: "E.E. Castro Alves", type: "Estadual", regional: "Regional Sul", jurisdiction: "SEDUC-AM", status: "Aprovada", program: "PNAE — 1ª Parcela/2025" },
-  "3": { name: "E.M. Cecília Meireles", type: "Municipal", regional: "Regional Leste", jurisdiction: "SEMED", status: "Pendente", program: "PNAE — 2ª Parcela/2024" },
-};
+interface SchoolData {
+  name: string;
+  type: string;
+  regional: string;
+  jurisdiction: string;
+  status: string;
+  cnpj?: string;
+  endereco?: string;
+  telefone?: string;
+  email?: string;
+  diretor?: string;
+  codigo_inep?: string;
+}
 
 // ——— Dashboard mocks ———
 const mockMetrics = { received: 48750.0, spent: 31420.65, balance: 17329.35 };
@@ -140,6 +147,7 @@ const AdminEscolaDetalhe = () => {
   const navigate = useNavigate();
   const { activeProcess } = useProcess();
   const [loading, setLoading] = useState(true);
+  const [school, setSchool] = useState<SchoolData | null>(null);
   const [creditModalOpen, setCreditModalOpen] = useState(false);
   const [creditValue, setCreditValue] = useState("");
   const [conselhoTabActive, setConselhoTabActive] = useState(false);
@@ -194,9 +202,28 @@ const AdminEscolaDetalhe = () => {
     }
   };
 
-  const school = mockSchools[schoolId || "1"] || mockSchools["1"];
+  const fetchSchool = async () => {
+    if (!schoolId) return;
+    const { data } = await supabase.from("schools").select("*").eq("id", schoolId).single();
+    if (data) {
+      setSchool({
+        name: data.name || "Sem nome",
+        type: data.type || "Municipal",
+        regional: data.regional || "—",
+        jurisdiction: data.jurisdiction || "—",
+        status: "Em análise",
+        cnpj: data.cnpj,
+        endereco: data.endereco,
+        telefone: data.telefone,
+        email: data.email,
+        diretor: data.diretor,
+        codigo_inep: data.codigo_inep,
+      });
+    }
+  };
 
   useEffect(() => {
+    fetchSchool();
     fetchProcessos();
     const t = setTimeout(() => {
       setChecklistItems(mockChecklistItems);
@@ -301,7 +328,7 @@ const AdminEscolaDetalhe = () => {
     return <Badge variant="secondary" className="font-normal text-xs">Upload manual</Badge>;
   };
 
-  if (loading) {
+  if (loading || !school) {
     return (
       <div className="space-y-4">
         <div className="h-6 w-48 rounded bg-muted animate-pulse" />
