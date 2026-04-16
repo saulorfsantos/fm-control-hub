@@ -159,7 +159,7 @@ const AdminEscolaDetalhe = () => {
   // Novo Processo state
   const [processModalOpen, setProcessModalOpen] = useState(false);
   const [processLoading, setProcessLoading] = useState(false);
-  const [processForm, setProcessForm] = useState({ code: "", programa: "", periodo: "", observacao: "" });
+  const [processForm, setProcessForm] = useState({ programa: "", periodo: "", observacao: "" });
   const [processos, setProcessos] = useState<any[]>([]);
 
   const fetchProcessos = async () => {
@@ -188,7 +188,7 @@ const AdminEscolaDetalhe = () => {
     } else {
       toast({ title: "Processo criado com sucesso!" });
       setProcessModalOpen(false);
-      setProcessForm({ code: "", programa: "", periodo: "", observacao: "" });
+      setProcessForm({ programa: "", periodo: "", observacao: "" });
       fetchProcessos();
     }
   };
@@ -678,10 +678,6 @@ const AdminEscolaDetalhe = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Período</label>
               <Input placeholder="Ex: 2025" value={processForm.periodo} onChange={(e) => setProcessForm((f) => ({ ...f, periodo: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Código (opcional)</label>
-              <Input placeholder="Ex: PNAE-2025-01" value={processForm.code} onChange={(e) => setProcessForm((f) => ({ ...f, code: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Observação</label>
