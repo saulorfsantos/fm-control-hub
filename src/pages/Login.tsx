@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, UtensilsCrossed } from "lucide-react";
+import { Mail, Lock, Landmark } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -26,14 +26,19 @@ const Login = () => {
           <div className="absolute top-1/2 left-1/3 w-24 h-24 rounded-full border-2 border-sidebar-foreground" />
         </div>
         <div className="relative z-10 text-center space-y-6">
-          <div className="mx-auto w-20 h-20 rounded-2xl bg-brand-orange flex items-center justify-center">
-            <UtensilsCrossed className="w-10 h-10 text-sidebar-primary-foreground" />
+          <div className="mx-auto w-20 h-20 rounded-2xl bg-sidebar-accent flex items-center justify-center">
+            <Landmark className="w-10 h-10 text-brand-purple" />
           </div>
-          <h1 className="text-3xl font-heading font-bold text-sidebar-foreground">
-            PNAE Digital
-          </h1>
+          <div>
+            <h1 className="text-2xl font-heading font-bold text-sidebar-foreground tracking-tight uppercase">
+              Portal de Transparência
+            </h1>
+            <p className="text-lg font-heading font-semibold text-brand-orange tracking-wide mt-1">
+              Forte Mais
+            </p>
+          </div>
           <p className="text-sidebar-foreground/70 max-w-xs text-sm leading-relaxed">
-            Plataforma integrada para gestão e prestação de contas do Programa Nacional de Alimentação Escolar.
+            Plataforma integrada para gestão e prestação de contas de recursos públicos.
           </p>
         </div>
       </div>
@@ -43,10 +48,10 @@ const Login = () => {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 justify-center mb-4">
-            <div className="w-10 h-10 rounded-xl bg-brand-orange flex items-center justify-center">
-              <UtensilsCrossed className="w-5 h-5 text-sidebar-primary-foreground" />
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <Landmark className="w-5 h-5 text-brand-purple" />
             </div>
-            <span className="text-xl font-heading font-bold text-foreground">PNAE Digital</span>
+            <span className="text-xl font-heading font-bold text-foreground tracking-tight">Portal de Transparência <span className="text-brand-orange">Forte Mais</span></span>
           </div>
 
           <div className="space-y-2 text-center lg:text-left">
