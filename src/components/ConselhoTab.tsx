@@ -25,7 +25,6 @@ interface Member {
   role: string;
   cpf: string;
   whatsapp: string;
-  signatureStatus: "signed" | "pending" | "expired";
 }
 
 interface ConselhoData {
@@ -45,24 +44,14 @@ const mockConselho: ConselhoData = {
   councilName: "Conselho Escolar da E.M. Monteiro Lobato",
   cnpj: "12.345.678/0001-90",
   members: [
-    { id: "1", name: "Maria Aparecida dos Santos", role: "Presidente", cpf: "***.***.123-45", whatsapp: "(85) 99812-3456", signatureStatus: "signed" },
-    { id: "2", name: "José Carlos Oliveira", role: "Tesoureiro", cpf: "***.***.234-56", whatsapp: "(85) 98765-4321", signatureStatus: "signed" },
-    { id: "3", name: "Ana Paula Ferreira Lima", role: "Secretária", cpf: "***.***.345-67", whatsapp: "(85) 99634-7890", signatureStatus: "pending" },
-    { id: "4", name: "Francisco Almeida Souza", role: "Membro", cpf: "***.***.456-78", whatsapp: "(85) 98456-1234", signatureStatus: "expired" },
-    { id: "5", name: "Cláudia Regina Martins", role: "Membro", cpf: "***.***.567-89", whatsapp: "(85) 99901-5678", signatureStatus: "signed" },
+    { id: "1", name: "Maria Aparecida dos Santos", role: "Presidente", cpf: "***.***.123-45", whatsapp: "(85) 99812-3456" },
+    { id: "2", name: "José Carlos Oliveira", role: "Tesoureiro", cpf: "***.***.234-56", whatsapp: "(85) 98765-4321" },
+    { id: "3", name: "Ana Paula Ferreira Lima", role: "Secretária", cpf: "***.***.345-67", whatsapp: "(85) 99634-7890" },
+    { id: "4", name: "Francisco Almeida Souza", role: "Membro", cpf: "***.***.456-78", whatsapp: "(85) 98456-1234" },
+    { id: "5", name: "Cláudia Regina Martins", role: "Membro", cpf: "***.***.567-89", whatsapp: "(85) 99901-5678" },
   ],
 };
 
-const signatureStatusBadge = (status: Member["signatureStatus"]) => {
-  switch (status) {
-    case "signed":
-      return <Badge className="bg-status-ok/15 text-status-ok border-0 text-xs font-medium">Assinado</Badge>;
-    case "pending":
-      return <Badge className="bg-brand-orange/15 text-brand-orange border-0 text-xs font-medium">Pendente</Badge>;
-    case "expired":
-      return <Badge className="bg-destructive/15 text-destructive border-0 text-xs font-medium">Expirado</Badge>;
-  }
-};
 
 const roleBadge = (role: string) => {
   const isLeader = ["Presidente", "Tesoureiro"].includes(role);
@@ -89,7 +78,7 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
   const [newCpf, setNewCpf] = useState("");
   const [newWhatsapp, setNewWhatsapp] = useState("");
 
-  const activeMembers = conselho.members.filter((m) => m.signatureStatus !== "expired");
+  const activeMembers = conselho.members;
   const hasMinMembers = activeMembers.length >= 3;
 
   const handleSaveGeneral = () => {
@@ -106,7 +95,6 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
       role: newRole,
       cpf: newCpf,
       whatsapp: newWhatsapp,
-      signatureStatus: "pending",
     };
     setConselho((prev) => ({ ...prev, members: [...prev.members, member] }));
     setAddModalOpen(false);
@@ -207,7 +195,6 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
                   <TableHead className="w-[120px]">Cargo</TableHead>
                   <TableHead className="w-[140px]">CPF</TableHead>
                   <TableHead className="w-[150px]">WhatsApp</TableHead>
-                  <TableHead className="w-[110px] text-center">Assinatura</TableHead>
                   {isAdmin && <TableHead className="w-[60px]" />}
                 </TableRow>
               </TableHeader>
@@ -218,7 +205,6 @@ const ConselhoTab = ({ isAdmin = false }: ConselhoTabProps) => {
                     <TableCell>{roleBadge(member.role)}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">{member.cpf}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{member.whatsapp || "—"}</TableCell>
-                    <TableCell className="text-center">{signatureStatusBadge(member.signatureStatus)}</TableCell>
                     {isAdmin && (
                       <TableCell className="text-center">
                         <Button
