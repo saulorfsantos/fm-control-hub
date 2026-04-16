@@ -159,7 +159,7 @@ const AdminEscolaDetalhe = () => {
   // Novo Processo state
   const [processModalOpen, setProcessModalOpen] = useState(false);
   const [processLoading, setProcessLoading] = useState(false);
-  const [processForm, setProcessForm] = useState({ code: "", programa: "", periodo: "", observacao: "" });
+  const [processForm, setProcessForm] = useState({ programa: "", periodo: "", observacao: "" });
   const [processos, setProcessos] = useState<any[]>([]);
 
   const fetchProcessos = async () => {
@@ -177,7 +177,6 @@ const AdminEscolaDetalhe = () => {
     setProcessLoading(true);
     const { error } = await supabase.from("accountability_processes").insert({
       school_id: schoolId,
-      code: processForm.code || `${processForm.programa}-${processForm.periodo}`,
       programa: processForm.programa,
       periodo: processForm.periodo,
       observacao: processForm.observacao,
@@ -189,7 +188,7 @@ const AdminEscolaDetalhe = () => {
     } else {
       toast({ title: "Processo criado com sucesso!" });
       setProcessModalOpen(false);
-      setProcessForm({ code: "", programa: "", periodo: "", observacao: "" });
+      setProcessForm({ programa: "", periodo: "", observacao: "" });
       fetchProcessos();
     }
   };
@@ -445,7 +444,6 @@ const AdminEscolaDetalhe = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Código</TableHead>
                       <TableHead>Programa</TableHead>
                       <TableHead>Período</TableHead>
                       <TableHead>Status</TableHead>
@@ -454,8 +452,7 @@ const AdminEscolaDetalhe = () => {
                   <TableBody>
                     {processos.map((p) => (
                       <TableRow key={p.id}>
-                        <TableCell className="font-mono text-sm">{p.code}</TableCell>
-                        <TableCell className="text-sm">{p.programa}</TableCell>
+                        <TableCell className="text-sm font-medium">{p.programa}</TableCell>
                         <TableCell className="text-sm">{p.periodo}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">
@@ -679,10 +676,6 @@ const AdminEscolaDetalhe = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Período</label>
               <Input placeholder="Ex: 2025" value={processForm.periodo} onChange={(e) => setProcessForm((f) => ({ ...f, periodo: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Código (opcional)</label>
-              <Input placeholder="Ex: PNAE-2025-01" value={processForm.code} onChange={(e) => setProcessForm((f) => ({ ...f, code: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Observação</label>
