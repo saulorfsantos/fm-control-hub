@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ConselhoTab from "@/components/ConselhoTab";
 import { useProcess } from "@/contexts/ProcessContext";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -147,16 +156,55 @@ const AdminEscolaDetalhe = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [exporting, setExporting] = useState(false);
 
+  // Novo Processo state
+  const [processModalOpen, setProcessModalOpen] = useState(false);
+  const [processLoading, setProcessLoading] = useState(false);
+  const [processForm, setProcessForm] = useState({ code: "", programa: "", periodo: "", observacao: "" });
+  const [processos, setProcessos] = useState<any[]>([]);
+
+  const fetchProcessos = async () => {
+    if (!schoolId) return;
+    const { data } = await supabase
+      .from("accountability_processes")
+      .select("*")
+      .eq("school_id", schoolId)
+      .order("created_at", { ascending: false });
+    if (data) setProcessos(data);
+  };
+
+  const handleCriarProcesso = async () => {
+    if (!schoolId || !processForm.programa) return;
+    setProcessLoading(true);
+    const { error } = await supabase.from("accountability_processes").insert({
+      school_id: schoolId,
+      code: processForm.code || `${processForm.programa}-${processForm.periodo}`,
+      programa: processForm.programa,
+      periodo: processForm.periodo,
+      observacao: processForm.observacao,
+      status: "pending",
+    });
+    setProcessLoading(false);
+    if (error) {
+      toast({ title: "Erro ao criar processo", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Processo criado com sucesso!" });
+      setProcessModalOpen(false);
+      setProcessForm({ code: "", programa: "", periodo: "", observacao: "" });
+      fetchProcessos();
+    }
+  };
+
   const school = mockSchools[schoolId || "1"] || mockSchools["1"];
 
   useEffect(() => {
+    fetchProcessos();
     const t = setTimeout(() => {
       setChecklistItems(mockChecklistItems);
       setTransactions(mockTransactions);
       setLoading(false);
     }, 600);
     return () => clearTimeout(t);
-  }, []);
+  }, [schoolId]);
 
   // ——— Checklist helpers ———
   const doneCount = checklistItems.filter((i) => i.status === "done").length;
@@ -293,10 +341,16 @@ const AdminEscolaDetalhe = () => {
             <span className="text-xs text-muted-foreground">• {school.type}</span>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="shrink-0" onClick={() => setActiveTab("conselho")}>
-          <Pencil className="w-4 h-4" />
-          Editar dados da escola
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" size="sm" onClick={() => setProcessModalOpen(true)}>
+            <PlusCircle className="w-4 h-4" />
+            Novo Processo
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setActiveTab("conselho")}>
+            <Pencil className="w-4 h-4" />
+            Editar dados
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -368,6 +422,51 @@ const AdminEscolaDetalhe = () => {
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+
+          {/* Processos da Escola */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <CardTitle className="text-base">Processos de Prestação de Contas</CardTitle>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => setProcessModalOpen(true)}>
+                  <PlusCircle className="w-4 h-4" /> Novo
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {processos.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">Nenhum processo cadastrado ainda.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Programa</TableHead>
+                      <TableHead>Período</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {processos.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="font-mono text-sm">{p.code}</TableCell>
+                        <TableCell className="text-sm">{p.programa}</TableCell>
+                        <TableCell className="text-sm">{p.periodo}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {p.status === "pending" ? "Pendente" : p.status === "approved" ? "Aprovado" : p.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -549,6 +648,52 @@ const AdminEscolaDetalhe = () => {
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleLancarCredito} disabled={creditLoading || !creditValue || !creditDate}>
               {creditLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Confirmar lançamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Novo Processo */}
+      <Dialog open={processModalOpen} onOpenChange={setProcessModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo Processo de Prestação de Contas</DialogTitle>
+            <DialogDescription>Crie um novo processo para {school.name}.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Programa *</label>
+              <Select value={processForm.programa} onValueChange={(v) => setProcessForm((f) => ({ ...f, programa: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o programa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PNAE">PNAE</SelectItem>
+                  <SelectItem value="PDDE">PDDE</SelectItem>
+                  <SelectItem value="Merenda">Merenda</SelectItem>
+                  <SelectItem value="Internet">Internet</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Período</label>
+              <Input placeholder="Ex: 2025" value={processForm.periodo} onChange={(e) => setProcessForm((f) => ({ ...f, periodo: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Código (opcional)</label>
+              <Input placeholder="Ex: PNAE-2025-01" value={processForm.code} onChange={(e) => setProcessForm((f) => ({ ...f, code: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Observação</label>
+              <Textarea placeholder="Observações sobre o processo..." value={processForm.observacao} onChange={(e) => setProcessForm((f) => ({ ...f, observacao: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProcessModalOpen(false)}>Cancelar</Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleCriarProcesso} disabled={processLoading || !processForm.programa}>
+              {processLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              Criar Processo
             </Button>
           </DialogFooter>
         </DialogContent>
