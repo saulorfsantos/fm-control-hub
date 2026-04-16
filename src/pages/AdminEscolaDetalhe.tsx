@@ -148,6 +148,7 @@ const AdminEscolaDetalhe = () => {
   const { activeProcess } = useProcess();
   const [loading, setLoading] = useState(true);
   const [school, setSchool] = useState<SchoolData | null>(null);
+  const [creditModalOpen, setCreditModalOpen] = useState(false);
   const [creditValue, setCreditValue] = useState("");
   const [conselhoTabActive, setConselhoTabActive] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
