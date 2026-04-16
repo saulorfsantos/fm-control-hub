@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import ProcessSelector from "@/components/ProcessSelector";
 import { useTheme } from "@/components/ThemeProvider";
 import {

@@ -8,6 +8,7 @@ import { ProcessProvider } from "@/contexts/ProcessContext";
 import Login from "./pages/Login";
 import DashboardLayout from "./components/DashboardLayout";
 import EscolaDashboard from "./pages/EscolaDashboard";
+import EscolaChecklist from "./pages/EscolaChecklist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/escola" element={<DashboardLayout />}>
                 <Route path="dashboard" element={<EscolaDashboard />} />
+                <Route path="checklist" element={<EscolaChecklist />} />
                 <Route index element={<Navigate to="dashboard" replace />} />
               </Route>
               {/* Keep old route for compat */}
