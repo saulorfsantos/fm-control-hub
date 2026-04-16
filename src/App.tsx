@@ -7,9 +7,11 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProcessProvider } from "@/contexts/ProcessContext";
 import Login from "./pages/Login";
 import DashboardLayout from "./components/DashboardLayout";
+import AdminLayout from "./components/AdminLayout";
 import EscolaDashboard from "./pages/EscolaDashboard";
 import EscolaChecklist from "./pages/EscolaChecklist";
 import EscolaFinanceiro from "./pages/EscolaFinanceiro";
+import AdminEscolas from "./pages/AdminEscolas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,10 @@ const App = () => (
                 <Route path="checklist" element={<EscolaChecklist />} />
                 <Route path="financeiro" element={<EscolaFinanceiro />} />
                 <Route index element={<Navigate to="dashboard" replace />} />
+              </Route>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route path="escolas" element={<AdminEscolas />} />
+                <Route index element={<Navigate to="escolas" replace />} />
               </Route>
               {/* Keep old route for compat */}
               <Route path="/dashboard" element={<Navigate to="/escola/dashboard" replace />} />
