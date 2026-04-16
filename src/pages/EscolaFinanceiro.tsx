@@ -75,13 +75,13 @@ const EscolaFinanceiro = () => {
 
   // Compute running balance
   const rows = transactions.map((tx, i) => {
-    const prevBalance = transactions.slice(0, i).reduce((acc, t) => acc + t.credit - t.debit, 0);
-    const balance = prevBalance + tx.credit - tx.debit;
+    const prevBalance = transactions.slice(0, i).reduce((acc, t) => acc + t.credito - t.debito, 0);
+    const balance = prevBalance + tx.credito - tx.debito;
     return { ...tx, balance };
   });
 
-  const totalCredits = transactions.reduce((s, t) => s + t.credit, 0);
-  const totalDebits = transactions.reduce((s, t) => s + t.debit, 0);
+  const totalCredits = transactions.reduce((s, t) => s + t.credito, 0);
+  const totalDebits = transactions.reduce((s, t) => s + t.debito, 0);
   const currentBalance = totalCredits - totalDebits;
 
   const handleExport = async () => {
@@ -185,17 +185,17 @@ const EscolaFinanceiro = () => {
               {rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className={cn(row.credit > 0 && "bg-status-ok/[0.04]")}
+                  className={cn(row.credito > 0 && "bg-status-ok/[0.04]")}
                 >
-                  <TableCell className="font-mono text-xs">{fmtDate(row.date)}</TableCell>
-                  <TableCell className="text-sm">{row.description}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{row.docNumber}</TableCell>
+                  <TableCell className="font-mono text-xs">{fmtDate(row.data)}</TableCell>
+                  <TableCell className="text-sm">{row.descricao}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{row.documento}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{row.company}</TableCell>
                   <TableCell className="text-right font-mono text-sm">
-                    {row.debit > 0 ? fmt(row.debit) : "—"}
+                    {row.debito > 0 ? fmt(row.debito) : "—"}
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm">
-                    {row.credit > 0 ? fmt(row.credit) : "—"}
+                    {row.credito > 0 ? fmt(row.credito) : "—"}
                   </TableCell>
                   <TableCell className={cn("text-right font-mono text-sm font-medium", row.balance >= 0 ? "text-status-ok" : "text-destructive")}>
                     {fmt(row.balance)}

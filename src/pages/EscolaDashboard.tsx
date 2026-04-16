@@ -32,11 +32,11 @@ const mockMetrics = {
 const mockChecklist = { done: 7, total: 12 };
 
 const mockTransactions = [
-  { date: "10/04/2025", description: "Repasse FNDE — Parcela 2/2025", type: "credit" as const, value: 12500.0 },
-  { date: "08/04/2025", description: "NF 4521 — Distribuidora Alimentos Ltda", type: "debit" as const, value: 4230.5 },
-  { date: "02/04/2025", description: "NF 4498 — Hortifruti Regional ME", type: "debit" as const, value: 1890.0 },
-  { date: "28/03/2025", description: "NF 4475 — Laticínios Serra Verde", type: "debit" as const, value: 2150.15 },
-  { date: "15/03/2025", description: "Repasse FNDE — Parcela 1/2025", type: "credit" as const, value: 12500.0 },
+  { data: "10/04/2025", descricao: "Repasse FNDE — Parcela 2/2025", debito: 0, credito: 12500.0 },
+  { data: "08/04/2025", descricao: "NF 4521 — Distribuidora Alimentos Ltda", debito: 4230.5, credito: 0 },
+  { data: "02/04/2025", descricao: "NF 4498 — Hortifruti Regional ME", debito: 1890.0, credito: 0 },
+  { data: "28/03/2025", descricao: "NF 4475 — Laticínios Serra Verde", debito: 2150.15, credito: 0 },
+  { data: "15/03/2025", descricao: "Repasse FNDE — Parcela 1/2025", debito: 0, credito: 12500.0 },
 ];
 
 const fmt = (v: number) =>
