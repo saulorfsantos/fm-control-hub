@@ -423,6 +423,51 @@ const AdminEscolaDetalhe = () => {
               </Table>
             </CardContent>
           </Card>
+
+          {/* Processos da Escola */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <CardTitle className="text-base">Processos de Prestação de Contas</CardTitle>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => setProcessModalOpen(true)}>
+                  <PlusCircle className="w-4 h-4" /> Novo
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {processos.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">Nenhum processo cadastrado ainda.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Programa</TableHead>
+                      <TableHead>Período</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {processos.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="font-mono text-sm">{p.code}</TableCell>
+                        <TableCell className="text-sm">{p.programa}</TableCell>
+                        <TableCell className="text-sm">{p.periodo}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {p.status === "pending" ? "Pendente" : p.status === "approved" ? "Aprovado" : p.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ——— TAB: Checklist (Admin) ——— */}
