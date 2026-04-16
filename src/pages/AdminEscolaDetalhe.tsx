@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import ConselhoTab from "@/components/ConselhoTab";
 import { useProcess } from "@/contexts/ProcessContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -297,11 +298,12 @@ const AdminEscolaDetalhe = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-6" onValueChange={(v) => { if (v === "conselho") setConselhoTabActive(true); }}>
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="checklist">Checklist</TabsTrigger>
           <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
+          <TabsTrigger value="conselho">Conselho</TabsTrigger>
         </TabsList>
 
         {/* ——— TAB: Visão Geral ——— */}
@@ -515,6 +517,11 @@ const AdminEscolaDetalhe = () => {
               </Table>
             </div>
           </Card>
+        </TabsContent>
+
+        {/* ——— TAB: Conselho (Admin) ——— */}
+        <TabsContent value="conselho" className="space-y-6">
+          <ConselhoTab isAdmin={true} />
         </TabsContent>
       </Tabs>
 
