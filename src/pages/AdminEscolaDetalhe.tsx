@@ -155,6 +155,44 @@ const AdminEscolaDetalhe = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [exporting, setExporting] = useState(false);
 
+  // Novo Processo state
+  const [processModalOpen, setProcessModalOpen] = useState(false);
+  const [processLoading, setProcessLoading] = useState(false);
+  const [processForm, setProcessForm] = useState({ code: "", programa: "", periodo: "", observacao: "" });
+  const [processos, setProcessos] = useState<any[]>([]);
+
+  const fetchProcessos = async () => {
+    if (!schoolId) return;
+    const { data } = await supabase
+      .from("accountability_processes")
+      .select("*")
+      .eq("school_id", schoolId)
+      .order("created_at", { ascending: false });
+    if (data) setProcessos(data);
+  };
+
+  const handleCriarProcesso = async () => {
+    if (!schoolId || !processForm.programa) return;
+    setProcessLoading(true);
+    const { error } = await supabase.from("accountability_processes").insert({
+      school_id: schoolId,
+      code: processForm.code || `${processForm.programa}-${processForm.periodo}`,
+      programa: processForm.programa,
+      periodo: processForm.periodo,
+      observacao: processForm.observacao,
+      status: "pending",
+    });
+    setProcessLoading(false);
+    if (error) {
+      toast({ title: "Erro ao criar processo", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Processo criado com sucesso!" });
+      setProcessModalOpen(false);
+      setProcessForm({ code: "", programa: "", periodo: "", observacao: "" });
+      fetchProcessos();
+    }
+  };
+
   const school = mockSchools[schoolId || "1"] || mockSchools["1"];
 
   useEffect(() => {
