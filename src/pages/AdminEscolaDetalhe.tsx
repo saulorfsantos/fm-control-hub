@@ -64,12 +64,19 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
-// ——— Mock school data keyed by ID ———
-const mockSchools: Record<string, { name: string; type: string; regional: string; jurisdiction: string; status: string; program: string }> = {
-  "1": { name: "E.M. Monteiro Lobato", type: "Municipal", regional: "Regional Norte", jurisdiction: "SEDUC-AM", status: "Em análise", program: "PNAE — 1ª Parcela/2025" },
-  "2": { name: "E.E. Castro Alves", type: "Estadual", regional: "Regional Sul", jurisdiction: "SEDUC-AM", status: "Aprovada", program: "PNAE — 1ª Parcela/2025" },
-  "3": { name: "E.M. Cecília Meireles", type: "Municipal", regional: "Regional Leste", jurisdiction: "SEMED", status: "Pendente", program: "PNAE — 2ª Parcela/2024" },
-};
+interface SchoolData {
+  name: string;
+  type: string;
+  regional: string;
+  jurisdiction: string;
+  status: string;
+  cnpj?: string;
+  endereco?: string;
+  telefone?: string;
+  email?: string;
+  diretor?: string;
+  codigo_inep?: string;
+}
 
 // ——— Dashboard mocks ———
 const mockMetrics = { received: 48750.0, spent: 31420.65, balance: 17329.35 };
