@@ -162,8 +162,9 @@ const AdminEscolaDetalhe = () => {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   // Financeiro state
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [exporting, setExporting] = useState(false);
+  const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
+  const { transactions: dbTransactions, loading: txLoading, refetch: refetchTx } = useFinancialTransactions(selectedProcessId);
 
   // Novo Processo state
   const [processModalOpen, setProcessModalOpen] = useState(false);
