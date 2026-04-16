@@ -139,7 +139,7 @@ const AdminEscolas = () => {
         </Button>
       </div>
 
-      <AddSchoolModal open={showAddModal} onOpenChange={setShowAddModal} />
+      <AddSchoolModal open={showAddModal} onOpenChange={setShowAddModal} onSuccess={fetchSchools} />
 
       {/* Filters — sticky */}
       <div className="sticky top-16 z-20 bg-background/95 backdrop-blur-sm -mx-4 md:-mx-6 px-4 md:px-6 py-3 border-b border-border">
