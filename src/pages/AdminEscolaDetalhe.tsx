@@ -651,6 +651,52 @@ const AdminEscolaDetalhe = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal: Novo Processo */}
+      <Dialog open={processModalOpen} onOpenChange={setProcessModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo Processo de Prestação de Contas</DialogTitle>
+            <DialogDescription>Crie um novo processo para {school.name}.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Programa *</label>
+              <Select value={processForm.programa} onValueChange={(v) => setProcessForm((f) => ({ ...f, programa: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o programa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PNAE">PNAE</SelectItem>
+                  <SelectItem value="PDDE">PDDE</SelectItem>
+                  <SelectItem value="Merenda">Merenda</SelectItem>
+                  <SelectItem value="Internet">Internet</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Período</label>
+              <Input placeholder="Ex: 2025" value={processForm.periodo} onChange={(e) => setProcessForm((f) => ({ ...f, periodo: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Código (opcional)</label>
+              <Input placeholder="Ex: PNAE-2025-01" value={processForm.code} onChange={(e) => setProcessForm((f) => ({ ...f, code: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Observação</label>
+              <Textarea placeholder="Observações sobre o processo..." value={processForm.observacao} onChange={(e) => setProcessForm((f) => ({ ...f, observacao: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProcessModalOpen(false)}>Cancelar</Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleCriarProcesso} disabled={processLoading || !processForm.programa}>
+              {processLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              Criar Processo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
