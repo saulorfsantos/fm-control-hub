@@ -294,6 +294,31 @@ const AdminEscolaDetalhe = () => {
   const totalDebits = dbTransactions.reduce((s, t) => s + Number(t.debito), 0);
   const currentBalance = totalCredits - totalDebits;
 
+  // Real metrics for "Visão Geral" — prefer process totals, fallback to computed sums
+  const selectedProcess = processos.find((p) => p.id === selectedProcessId) || processos[0];
+  const realMetrics = {
+    received: Number(selectedProcess?.total_received ?? 0) || totalCredits,
+    spent: Number(selectedProcess?.total_spent ?? 0) || totalDebits,
+    get balance() { return this.received - this.spent; },
+  };
+
+  // Recent transactions (last 5, newest first) from real DB data
+  const recentTx = [...dbTransactions]
+    .sort((a, b) => (b.data || "").localeCompare(a.data || ""))
+    .slice(0, 5)
+    .map((t) => ({
+      date: fmtDate(t.data),
+      description: t.descricao || t.documento || "—",
+      type: Number(t.credito) > 0 ? ("credit" as const) : ("debit" as const),
+      value: Number(t.credito) > 0 ? Number(t.credito) : Number(t.debito),
+    }));
+
+  // Real checklist progress (count from current state)
+  const realChecklistProgress = {
+    done: checklistItems.filter((i) => i.status === "done").length,
+    total: checklistItems.length || 1,
+  };
+
   const handleExport = async () => {
     setExporting(true);
     await new Promise((r) => setTimeout(r, 2000));
