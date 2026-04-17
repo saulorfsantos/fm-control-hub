@@ -65,7 +65,10 @@ const AdminEscolas = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("schools")
-      .select("id, name, type, cnpj, address, phone, email, principal_name, inep_code")
+      .select(`
+        id, name, type,
+        accountability_processes ( programa, periodo, reference_period, status, total_received, total_spent, updated_at )
+      `)
       .order("name");
 
     if (error) {
@@ -73,19 +76,29 @@ const AdminEscolas = () => {
       setSchools([]);
     } else {
       setSchools(
-        (data || []).map((s: any) => ({
-          id: s.id,
-          name: s.name || "Sem nome",
-          type: s.type === "estadual" ? "Estadual" : "Municipal",
-          regional: "-",
-          program: "PNAE",
-          period: "2025",
-          parcel: "1ª Parcela",
-          status: "awaiting" as SchoolStatus,
-          checklistDone: 0,
-          checklistTotal: 7,
-          balance: 0,
-        }))
+        (data || []).map((s: any) => {
+          const procs = (s.accountability_processes || []) as any[];
+          // Pick most recently updated process for the headline numbers
+          const proc = procs.slice().sort((a, b) =>
+            (b.updated_at || "").localeCompare(a.updated_at || "")
+          )[0];
+          const received = Number(proc?.total_received ?? 0);
+          const spent = Number(proc?.total_spent ?? 0);
+          const balance = received - spent;
+          return {
+            id: s.id,
+            name: s.name || "Sem nome",
+            type: s.type === "estadual" ? "Estadual" : "Municipal",
+            regional: "-",
+            program: proc?.programa || "—",
+            period: proc?.periodo || proc?.reference_period || "—",
+            parcel: "—",
+            status: "awaiting" as SchoolStatus,
+            checklistDone: 0,
+            checklistTotal: 7,
+            balance,
+          };
+        })
       );
     }
     setLoading(false);
