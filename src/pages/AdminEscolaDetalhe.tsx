@@ -351,7 +351,7 @@ const AdminEscolaDetalhe = () => {
     refetchTx();
   };
 
-  const balancePositive = mockMetrics.balance >= 0;
+  const balancePositive = realMetrics.balance >= 0;
 
   const statusBadge = (status: ChecklistItem["status"]) => {
     switch (status) {
@@ -430,9 +430,9 @@ const AdminEscolaDetalhe = () => {
         {/* ——— TAB: Visão Geral ——— */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <MetricCard title="Valor Recebido" value={fmt(mockMetrics.received)} icon={<ArrowDownLeft className="w-4 h-4 text-status-ok" />} iconBg="bg-status-ok/10" />
-            <MetricCard title="Total Gasto" value={fmt(mockMetrics.spent)} icon={<ArrowUpRight className="w-4 h-4 text-status-error" />} iconBg="bg-status-error/10" />
-            <MetricCard title="Saldo Disponível" value={fmt(mockMetrics.balance)} valueClass={balancePositive ? "text-status-ok" : "text-status-error"} icon={<Wallet className="w-4 h-4 text-primary" />} iconBg="bg-primary/10" />
+            <MetricCard title="Valor Recebido" value={fmt(realMetrics.received)} icon={<ArrowDownLeft className="w-4 h-4 text-status-ok" />} iconBg="bg-status-ok/10" />
+            <MetricCard title="Total Gasto" value={fmt(realMetrics.spent)} icon={<ArrowUpRight className="w-4 h-4 text-status-error" />} iconBg="bg-status-error/10" />
+            <MetricCard title="Saldo Disponível" value={fmt(realMetrics.balance)} valueClass={balancePositive ? "text-status-ok" : "text-status-error"} icon={<Wallet className="w-4 h-4 text-primary" />} iconBg="bg-primary/10" />
           </div>
 
           <Card>
@@ -445,10 +445,10 @@ const AdminEscolaDetalhe = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Progress value={(mockChecklistProgress.done / mockChecklistProgress.total) * 100} className="h-3 bg-secondary" />
+              <Progress value={(realChecklistProgress.done / realChecklistProgress.total) * 100} className="h-3 bg-secondary" />
               <p className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{mockChecklistProgress.done}</span> de{" "}
-                <span className="font-medium text-foreground">{mockChecklistProgress.total}</span> documentos concluídos
+                <span className="font-medium text-foreground">{realChecklistProgress.done}</span> de{" "}
+                <span className="font-medium text-foreground">{checklistItems.length}</span> documentos concluídos
               </p>
             </CardContent>
           </Card>
@@ -471,7 +471,13 @@ const AdminEscolaDetalhe = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockRecentTx.map((tx, i) => (
+                  {recentTx.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-6">
+                        Nenhuma movimentação registrada para este processo.
+                      </TableCell>
+                    </TableRow>
+                  ) : recentTx.map((tx, i) => (
                     <TableRow key={i}>
                       <TableCell className="text-xs text-muted-foreground">{tx.date}</TableCell>
                       <TableCell className="text-sm">{tx.description}</TableCell>
