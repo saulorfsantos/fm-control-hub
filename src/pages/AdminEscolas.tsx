@@ -155,21 +155,7 @@ const AdminEscolas = () => {
             <RefreshCw className={cn("w-4 h-4 mr-2", loading && "animate-spin")} />
             Atualizar
           </Button>
-          <Button onClick={() => setShowAddModal(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Adicionar Escola
-          </Button>
-        </div>
-      </div>
-
-      <AddSchoolModal
-        open={showAddModal}
-        onOpenChange={setShowAddModal}
-        onSuccess={fetchData}
-      />
-
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="shadow-none border-status-ok/20">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="w-10 h-10 rounded-lg bg-status-ok/10 flex items-center justify-center">
@@ -196,25 +182,9 @@ const AdminEscolas = () => {
             </div>
           </CardContent>
         </Card>
-        <Card
-          className={cn(
-            "shadow-none",
-            summary.net >= 0 ? "border-primary/20" : "border-brand-orange/20"
-          )}
-        >
-          <CardContent className="flex items-center gap-3 p-4">
-            <div
-              className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center",
-                summary.net >= 0 ? "bg-primary/10" : "bg-brand-orange/10"
-              )}
-            >
-              <Wallet
-                className={cn(
-                  "w-5 h-5",
-                  summary.net >= 0 ? "text-primary" : "text-brand-orange"
-                )}
-              />
+        {/* Card "Saldo líquido" removido temporariamente — lógica preservada em `summary.net` */}
+      </div>
+
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Saldo líquido</p>
