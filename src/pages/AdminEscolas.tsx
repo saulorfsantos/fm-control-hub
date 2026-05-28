@@ -155,6 +155,22 @@ const AdminEscolas = () => {
             <RefreshCw className={cn("w-4 h-4 mr-2", loading && "animate-spin")} />
             Atualizar
           </Button>
+            Atualizar
+          </Button>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Escola
+          </Button>
+        </div>
+      </div>
+
+      <AddSchoolModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSuccess={fetchData}
+      />
+
+      {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="shadow-none border-status-ok/20">
           <CardContent className="flex items-center gap-3 p-4">
@@ -185,21 +201,6 @@ const AdminEscolas = () => {
         {/* Card "Saldo líquido" removido temporariamente — lógica preservada em `summary.net` */}
       </div>
 
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Saldo líquido</p>
-              <p
-                className={cn(
-                  "text-xl font-heading font-bold",
-                  summary.net >= 0 ? "text-primary" : "text-brand-orange"
-                )}
-              >
-                {fmt(summary.net)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Search */}
       <div className="relative max-w-md">
