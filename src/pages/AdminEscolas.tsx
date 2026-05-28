@@ -4,298 +4,321 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   School,
   Search,
-  Building2,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
   ChevronRight,
   Plus,
+  RefreshCw,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AddSchoolModal from "@/components/AddSchoolModal";
 import { supabase } from "@/lib/supabase";
 
-type SchoolStatus = "approved" | "pending" | "awaiting";
-
-interface SchoolItem {
-  id: string;
+interface SchoolRow {
+  school_id: string;
   name: string;
-  type: string;
-  regional: string;
-  program: string;
-  period: string;
-  parcel: string;
-  status: SchoolStatus;
-  checklistDone: number;
-  checklistTotal: number;
+  municipality: string;
+  programs: string[];
+  lastMovement: string | null;
   balance: number;
 }
 
-const statusConfig: Record<SchoolStatus, { label: string; className: string }> = {
-  approved: { label: "Aprovada", className: "bg-status-ok/15 text-status-ok border-0" },
-  pending: { label: "Com pendências", className: "bg-destructive/15 text-destructive border-0" },
-  awaiting: { label: "Aguardando protocolo", className: "bg-brand-orange/15 text-brand-orange border-0" },
+const fmt = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const fmtDate = (iso: string | null) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("pt-BR");
 };
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const extractMunicipality = (address: string | null | undefined): string => {
+  if (!address) return "—";
+  const parts = address.split(" - ").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return "—";
+  return parts[parts.length - 1];
+};
+
+const programLabel = (row: any): string => {
+  const prog = row.programa ?? row.program ?? row.program_name ?? "";
+  const period =
+    row.periodo ?? row.period ?? row.reference_period ?? row.year ?? "";
+  if (row.label) return String(row.label);
+  return [prog, period].filter(Boolean).join(" ").trim() || "—";
+};
 
 const AdminEscolas = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [schools, setSchools] = useState<SchoolItem[]>([]);
+  const [rows, setRows] = useState<SchoolRow[]>([]);
   const [search, setSearch] = useState("");
-  const [regional, setRegional] = useState("all");
-  const [program, setProgram] = useState("all");
-  const [status, setStatus] = useState("all");
-  const [year, setYear] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const fetchSchools = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("schools")
-      .select(`
-        id, name, type,
-        accountability_processes ( programa, periodo, reference_period, status, total_received, total_spent, updated_at )
-      `)
-      .order("name");
+    const [balancesRes, programsRes] = await Promise.all([
+      supabase.from("school_balances").select("*"),
+      supabase.from("school_active_programs").select("*"),
+    ]);
 
-    if (error) {
-      console.error("Error fetching schools:", error);
-      setSchools([]);
-    } else {
-      setSchools(
-        (data || []).map((s: any) => {
-          const procs = (s.accountability_processes || []) as any[];
-          // Pick most recently updated process for the headline numbers
-          const proc = procs.slice().sort((a, b) =>
-            (b.updated_at || "").localeCompare(a.updated_at || "")
-          )[0];
-          const received = Number(proc?.total_received ?? 0);
-          const spent = Number(proc?.total_spent ?? 0);
-          const balance = received - spent;
-          return {
-            id: s.id,
-            name: s.name || "Sem nome",
-            type: s.type === "estadual" ? "Estadual" : "Municipal",
-            regional: "-",
-            program: proc?.programa || "—",
-            period: proc?.periodo || proc?.reference_period || "—",
-            parcel: "—",
-            status: "awaiting" as SchoolStatus,
-            checklistDone: 0,
-            checklistTotal: 7,
-            balance,
-          };
-        })
-      );
+    if (balancesRes.error) {
+      console.error("Error fetching school_balances:", balancesRes.error);
     }
+    if (programsRes.error) {
+      console.error("Error fetching school_active_programs:", programsRes.error);
+    }
+
+    const balances = (balancesRes.data || []) as any[];
+    const programs = (programsRes.data || []) as any[];
+
+    const programsBySchool = new Map<string, string[]>();
+    for (const p of programs) {
+      const id = p.school_id ?? p.id;
+      if (!id) continue;
+      const label = programLabel(p);
+      const arr = programsBySchool.get(id) || [];
+      if (!arr.includes(label)) arr.push(label);
+      programsBySchool.set(id, arr);
+    }
+
+    const merged: SchoolRow[] = balances.map((b: any) => {
+      const id = b.school_id ?? b.id;
+      return {
+        school_id: id,
+        name: b.name ?? b.school_name ?? "Sem nome",
+        municipality: extractMunicipality(b.address),
+        programs: programsBySchool.get(id) || [],
+        lastMovement:
+          b.last_movement_at ??
+          b.last_movement ??
+          b.updated_at ??
+          null,
+        balance: Number(b.balance ?? b.saldo ?? 0),
+      };
+    });
+
+    merged.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+    setRows(merged);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchSchools();
-  }, [fetchSchools]);
+    fetchData();
+  }, [fetchData]);
 
   const filtered = useMemo(() => {
-    return schools.filter((s) => {
-      if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
-      if (regional !== "all" && s.regional !== regional) return false;
-      if (program !== "all" && s.program !== program) return false;
-      if (status !== "all" && s.status !== status) return false;
-      if (year !== "all" && s.period !== year) return false;
-      return true;
-    });
-  }, [search, regional, program, status, year, schools]);
-
-  const metrics = {
-    total: schools.length,
-    approved: schools.filter((s) => s.status === "approved").length,
-    pending: schools.filter((s) => s.status === "pending").length,
-    awaiting: schools.filter((s) => s.status === "awaiting").length,
-  };
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-12 rounded-lg bg-muted animate-pulse" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />)}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => <div key={i} className="h-48 rounded-xl bg-muted animate-pulse" />)}
-        </div>
-      </div>
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.municipality.toLowerCase().includes(q)
     );
-  }
+  }, [rows, search]);
+
+  const summary = useMemo(() => {
+    let credits = 0;
+    let debits = 0;
+    for (const r of rows) {
+      if (r.balance > 0) credits += r.balance;
+      else if (r.balance < 0) debits += Math.abs(r.balance);
+    }
+    return { credits, debits, net: credits - debits };
+  }, [rows]);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-heading font-bold text-foreground">Escolas da Rede</h2>
-          <p className="text-sm text-muted-foreground mt-1">Gerencie a prestação de contas de todas as unidades</p>
+          <h2 className="text-2xl font-heading font-bold text-foreground">
+            Escolas da Rede
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Saldo consolidado de débitos e créditos por unidade
+          </p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Escola
-        </Button>
-      </div>
-
-      <AddSchoolModal open={showAddModal} onOpenChange={setShowAddModal} onSuccess={fetchSchools} />
-
-      {/* Filters — sticky */}
-      <div className="sticky top-16 z-20 bg-background/95 backdrop-blur-sm -mx-4 md:-mx-6 px-4 md:px-6 py-3 border-b border-border">
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-          <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar escola..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <div className="grid grid-cols-2 sm:flex gap-3">
-            <Select value={regional} onValueChange={setRegional}>
-              <SelectTrigger className="sm:w-[160px]"><SelectValue placeholder="Regional" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas regionais</SelectItem>
-                <SelectItem value="Regional Norte">Regional Norte</SelectItem>
-                <SelectItem value="Regional Sul">Regional Sul</SelectItem>
-                <SelectItem value="Regional Leste">Regional Leste</SelectItem>
-                <SelectItem value="Regional Oeste">Regional Oeste</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={program} onValueChange={setProgram}>
-              <SelectTrigger className="sm:w-[140px]"><SelectValue placeholder="Programa" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="PNAE">PNAE</SelectItem>
-                <SelectItem value="PDDE">PDDE</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="sm:w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos status</SelectItem>
-                <SelectItem value="approved">Aprovada</SelectItem>
-                <SelectItem value="pending">Com pendências</SelectItem>
-                <SelectItem value="awaiting">Aguardando protocolo</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={year} onValueChange={setYear}>
-              <SelectTrigger className="sm:w-[120px]"><SelectValue placeholder="Ano" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos anos</SelectItem>
-                <SelectItem value="2025">2025</SelectItem>
-                <SelectItem value="2024">2024</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={fetchData} disabled={loading}>
+            <RefreshCw className={cn("w-4 h-4 mr-2", loading && "animate-spin")} />
+            Atualizar
+          </Button>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Escola
+          </Button>
         </div>
       </div>
 
-      {/* Metric cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="shadow-none">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><Building2 className="w-4 h-4 text-primary" /></div>
-            <div><p className="text-xs text-muted-foreground">Total ativas</p><p className="text-xl font-heading font-bold text-foreground">{metrics.total}</p></div>
-          </CardContent>
-        </Card>
+      <AddSchoolModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSuccess={fetchData}
+      />
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="shadow-none border-status-ok/20">
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="w-9 h-9 rounded-lg bg-status-ok/10 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-status-ok" /></div>
-            <div><p className="text-xs text-muted-foreground">Aprovadas</p><p className="text-xl font-heading font-bold text-status-ok">{metrics.approved}</p></div>
+            <div className="w-10 h-10 rounded-lg bg-status-ok/10 flex items-center justify-center">
+              <ArrowUpCircle className="w-5 h-5 text-status-ok" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Créditos a receber</p>
+              <p className="text-xl font-heading font-bold text-status-ok">
+                {fmt(summary.credits)}
+              </p>
+            </div>
           </CardContent>
         </Card>
         <Card className="shadow-none border-destructive/20">
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="w-9 h-9 rounded-lg bg-destructive/10 flex items-center justify-center"><AlertTriangle className="w-4 h-4 text-destructive" /></div>
-            <div><p className="text-xs text-muted-foreground">Com pendências</p><p className="text-xl font-heading font-bold text-destructive">{metrics.pending}</p></div>
+            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <ArrowDownCircle className="w-5 h-5 text-destructive" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Débitos em aberto</p>
+              <p className="text-xl font-heading font-bold text-destructive">
+                {fmt(summary.debits)}
+              </p>
+            </div>
           </CardContent>
         </Card>
-        <Card className="shadow-none border-brand-orange/20">
+        <Card
+          className={cn(
+            "shadow-none",
+            summary.net >= 0 ? "border-primary/20" : "border-brand-orange/20"
+          )}
+        >
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center"><Clock className="w-4 h-4 text-brand-orange" /></div>
-            <div><p className="text-xs text-muted-foreground">Aguardando</p><p className="text-xl font-heading font-bold text-brand-orange">{metrics.awaiting}</p></div>
+            <div
+              className={cn(
+                "w-10 h-10 rounded-lg flex items-center justify-center",
+                summary.net >= 0 ? "bg-primary/10" : "bg-brand-orange/10"
+              )}
+            >
+              <Wallet
+                className={cn(
+                  "w-5 h-5",
+                  summary.net >= 0 ? "text-primary" : "text-brand-orange"
+                )}
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Saldo líquido</p>
+              <p
+                className={cn(
+                  "text-xl font-heading font-bold",
+                  summary.net >= 0 ? "text-primary" : "text-brand-orange"
+                )}
+              >
+                {fmt(summary.net)}
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* School grid */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <School className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhuma escola encontrada com os filtros selecionados.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((school) => {
-            const cfg = statusConfig[school.status];
-            const progress = (school.checklistDone / school.checklistTotal) * 100;
-            return (
-              <Card
-                key={school.id}
-                className="shadow-none hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
-                onClick={() => navigate(`/admin/escola/${school.id}`)}
-              >
-                <CardContent className="p-5 space-y-4">
-                  {/* Header */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                        {school.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{school.type}</p>
-                    </div>
-                    <Badge className={cn("text-[10px] shrink-0", cfg.className)}>{cfg.label}</Badge>
-                  </div>
+      {/* Search */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar por escola ou município..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
-                  {/* Program */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge variant="secondary" className="text-[10px] font-normal">{school.program}</Badge>
-                    <span>{school.parcel}/{school.period}</span>
-                    <span>•</span>
-                    <span>{school.regional}</span>
-                  </div>
-
-                  {/* Checklist progress */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Checklist</span>
-                      <span className="font-medium text-foreground">{school.checklistDone}/{school.checklistTotal}</span>
+      {/* Table */}
+      <Card className="shadow-none overflow-hidden">
+        {loading ? (
+          <div className="p-4 space-y-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-12 rounded-md bg-muted animate-pulse" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground">
+            <School className="w-10 h-10 mx-auto mb-3 opacity-40" />
+            <p className="text-sm">Nenhuma escola encontrada.</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Escola</TableHead>
+                <TableHead>Município</TableHead>
+                <TableHead>Programas ativos</TableHead>
+                <TableHead>Última movimentação</TableHead>
+                <TableHead className="text-right">Saldo</TableHead>
+                <TableHead className="w-8" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((row) => (
+                <TableRow
+                  key={row.school_id}
+                  className="cursor-pointer group"
+                  onClick={() => navigate(`/admin/escola/${row.school_id}`)}
+                >
+                  <TableCell className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    {row.name}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {row.municipality}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {row.programs.length === 0 ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : (
+                        row.programs.map((p) => (
+                          <Badge
+                            key={p}
+                            variant="secondary"
+                            className="text-[10px] font-normal"
+                          >
+                            {p}
+                          </Badge>
+                        ))
+                      )}
                     </div>
-                    <Progress value={progress} className="h-2" />
-                  </div>
-
-                  {/* Balance + arrow */}
-                  <div className="flex items-center justify-between pt-1 border-t border-border">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground">Saldo disponível</p>
-                      <p className={cn("text-sm font-mono font-bold", school.balance >= 0 ? "text-status-ok" : "text-destructive")}>
-                        {fmt(school.balance)}
-                      </p>
-                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {fmtDate(row.lastMovement)}
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-right font-mono font-semibold",
+                      row.balance > 0 && "text-status-ok",
+                      row.balance < 0 && "text-destructive",
+                      row.balance === 0 && "text-muted-foreground"
+                    )}
+                  >
+                    {fmt(row.balance)}
+                  </TableCell>
+                  <TableCell>
                     <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Card>
     </div>
   );
 };
