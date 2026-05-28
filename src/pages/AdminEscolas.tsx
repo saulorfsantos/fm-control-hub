@@ -155,8 +155,6 @@ const AdminEscolas = () => {
             <RefreshCw className={cn("w-4 h-4 mr-2", loading && "animate-spin")} />
             Atualizar
           </Button>
-            Atualizar
-          </Button>
           <Button onClick={() => setShowAddModal(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Escola
