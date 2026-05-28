@@ -55,10 +55,10 @@ const AdminLayout = () => {
               <Landmark className="w-4 h-4 text-brand-purple" />
             </div>
             <span className="text-sm font-heading font-bold text-sidebar-foreground tracking-tight leading-tight hidden lg:block md:hidden">
-              Portal de Transparência <span className="text-brand-orange text-xs font-semibold">Forte Mais</span>
+              Forte Mais <span className="text-brand-orange text-xs font-semibold">Controle</span>
             </span>
             <span className="text-sm font-heading font-bold text-sidebar-foreground tracking-tight leading-tight md:hidden">
-              Portal de Transparência <span className="text-brand-orange text-xs font-semibold">Forte Mais</span>
+              Forte Mais <span className="text-brand-orange text-xs font-semibold">Controle</span>
             </span>
             <Button
               variant="ghost"
@@ -137,7 +137,7 @@ const AdminLayout = () => {
             </Button>
 
             <h1 className="text-lg font-heading font-semibold text-foreground truncate">
-              Painel Administrativo
+              Painel Financeiro — Forte Mais
             </h1>
 
             <div className="ml-auto flex items-center gap-2">
