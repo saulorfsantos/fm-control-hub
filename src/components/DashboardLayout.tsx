@@ -22,13 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { ClipboardCheck, Receipt, Users } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/escola/dashboard" },
-  { label: "Checklist Documental", icon: ClipboardCheck, path: "/escola/checklist" },
-  { label: "Movimentação Financeira", icon: Receipt, path: "/escola/financeiro" },
-  { label: "Dados do Conselho", icon: Users, path: "/escola/conselho" },
-  { label: "Prestação de Contas", icon: FileText, path: "#" },
-  { label: "Relatórios", icon: BarChart3, path: "#" },
-  { label: "Configurações", icon: Settings, path: "#" },
+  { label: "Financeiro", icon: Receipt, path: "/escola/financeiro" },
 ];
 
 const DashboardLayout = () => {

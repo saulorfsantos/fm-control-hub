@@ -21,9 +21,6 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 
 const navItems = [
   { label: "Escolas", icon: Building2, path: "/admin/escolas" },
-  { label: "Usuários", icon: Users, path: "#" },
-  { label: "Relatórios", icon: BarChart3, path: "#" },
-  { label: "Configurações", icon: Settings, path: "#" },
 ];
 
 const AdminLayout = () => {
