@@ -18,9 +18,8 @@ import {
   ChevronRight,
   Plus,
   RefreshCw,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Wallet,
+  TrendingUp,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AddSchoolModal from "@/components/AddSchoolModal";
@@ -132,11 +131,18 @@ const AdminEscolas = () => {
   const summary = useMemo(() => {
     let credits = 0;
     let debits = 0;
+    let creditsCount = 0;
+    let debitsCount = 0;
     for (const r of rows) {
-      if (r.balance > 0) credits += r.balance;
-      else if (r.balance < 0) debits += Math.abs(r.balance);
+      if (r.balance > 0) {
+        credits += r.balance;
+        creditsCount++;
+      } else if (r.balance < 0) {
+        debits += Math.abs(r.balance);
+        debitsCount++;
+      }
     }
-    return { credits, debits, net: credits - debits };
+    return { credits, debits, net: credits - debits, creditsCount, debitsCount };
   }, [rows]);
 
   return (
@@ -147,7 +153,7 @@ const AdminEscolas = () => {
             Escolas da Rede
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Saldo consolidado de débitos e créditos por unidade
+            Posição financeira de cada escola
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -173,25 +179,31 @@ const AdminEscolas = () => {
         <Card className="shadow-none border-status-ok/20">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="w-10 h-10 rounded-lg bg-status-ok/10 flex items-center justify-center">
-              <ArrowUpCircle className="w-5 h-5 text-status-ok" />
+              <TrendingUp className="w-5 h-5 text-status-ok" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Créditos a receber</p>
+              <p className="text-xs text-muted-foreground">Créditos em Caixa</p>
               <p className="text-xl font-heading font-bold text-status-ok">
                 {fmt(summary.credits)}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Em {summary.creditsCount} escola{summary.creditsCount === 1 ? "" : "s"}
               </p>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-none border-destructive/20">
+        <Card className="shadow-none border-brand-orange/20">
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-              <ArrowDownCircle className="w-5 h-5 text-destructive" />
+            <div className="w-10 h-10 rounded-lg bg-brand-orange/10 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-brand-orange" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Débitos em aberto</p>
-              <p className="text-xl font-heading font-bold text-destructive">
+              <p className="text-xs text-muted-foreground">Débitos em Aberto</p>
+              <p className="text-xl font-heading font-bold text-brand-orange">
                 {fmt(summary.debits)}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Em {summary.debitsCount} escola{summary.debitsCount === 1 ? "" : "s"}
               </p>
             </div>
           </CardContent>
@@ -232,6 +244,7 @@ const AdminEscolas = () => {
                 <TableHead>Município</TableHead>
                 <TableHead>Programas ativos</TableHead>
                 <TableHead>Última movimentação</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Saldo</TableHead>
                 <TableHead className="w-8" />
               </TableRow>
@@ -269,11 +282,26 @@ const AdminEscolas = () => {
                   <TableCell className="text-sm text-muted-foreground">
                     {fmtDate(row.lastMovement)}
                   </TableCell>
+                  <TableCell>
+                    {row.balance > 0 ? (
+                      <Badge variant="outline" className="bg-status-ok/15 text-status-ok border-status-ok/30">
+                        Crédito
+                      </Badge>
+                    ) : row.balance < 0 ? (
+                      <Badge variant="outline" className="bg-brand-orange/15 text-brand-orange border-brand-orange/30">
+                        Em Aberto
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-muted text-muted-foreground border-muted-foreground/20">
+                        Quitado
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell
                     className={cn(
                       "text-right font-mono font-semibold",
                       row.balance > 0 && "text-status-ok",
-                      row.balance < 0 && "text-destructive",
+                      row.balance < 0 && "text-brand-orange",
                       row.balance === 0 && "text-muted-foreground"
                     )}
                   >
