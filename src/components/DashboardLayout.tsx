@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import ProcessSelector from "@/components/ProcessSelector";
 import { useTheme } from "@/components/ThemeProvider";
+import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard,
   FileText,
   BarChart3,
   Settings,
-  Bell,
   Sun,
   Moon,
   Menu,
@@ -32,7 +32,29 @@ const DashboardLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { profile, signOut } = useAuth();
+  const [schoolInfo, setSchoolInfo] = useState<{name: string, cnpj: string} | null>(null);
+  const [loadingSchool, setLoadingSchool] = useState(true);
+
+  useEffect(() => {
+    async function loadSchoolInfo() {
+      if (!profile?.school_id) {
+        setLoadingSchool(false);
+        return;
+      }
+      const { data } = await supabase
+        .from('school_balances')
+        .select('name, cnpj')
+        .eq('school_id', profile.school_id)
+        .maybeSingle();
+      
+      if (data) {
+        setSchoolInfo(data);
+      }
+      setLoadingSchool(false);
+    }
+    loadSchoolInfo();
+  }, [profile?.school_id]);
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -128,21 +150,33 @@ const DashboardLayout = () => {
                 <School className="w-4 h-4 text-sidebar-foreground" />
               </div>
               <div className="flex-1 min-w-0 hidden lg:block md:hidden">
-                <p className="text-xs font-medium text-sidebar-foreground truncate">
-                  E.M. Monteiro Lobato
-                </p>
-                <p className="text-[10px] text-sidebar-foreground/50 truncate">
-                  CNPJ: 12.345.678/0001-90
-                </p>
+                {loadingSchool ? (
+                  <p className="text-xs text-muted-foreground">Carregando...</p>
+                ) : schoolInfo ? (
+                  <>
+                    <p className="text-xs font-medium text-sidebar-foreground truncate">
+                      {schoolInfo.name}
+                    </p>
+                    <p className="text-[10px] text-sidebar-foreground/50 truncate">
+                      CNPJ: {schoolInfo.cnpj}
+                    </p>
+                  </>
+                ) : null}
               </div>
               {/* Mobile drawer also shows text */}
               <div className="flex-1 min-w-0 md:hidden">
-                <p className="text-xs font-medium text-sidebar-foreground truncate">
-                  E.M. Monteiro Lobato
-                </p>
-                <p className="text-[10px] text-sidebar-foreground/50 truncate">
-                  CNPJ: 12.345.678/0001-90
-                </p>
+                {loadingSchool ? (
+                  <p className="text-xs text-muted-foreground">Carregando...</p>
+                ) : schoolInfo ? (
+                  <>
+                    <p className="text-xs font-medium text-sidebar-foreground truncate">
+                      {schoolInfo.name}
+                    </p>
+                    <p className="text-[10px] text-sidebar-foreground/50 truncate">
+                      CNPJ: {schoolInfo.cnpj}
+                    </p>
+                  </>
+                ) : null}
               </div>
             </div>
           </div>
@@ -169,10 +203,6 @@ const DashboardLayout = () => {
             <div className="ml-auto flex items-center gap-2">
               <Button variant="ghost" size="icon" onClick={toggleTheme}>
                 {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              </Button>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-orange" />
               </Button>
               <Avatar className="w-8 h-8">
                 <AvatarFallback className="bg-brand-purple text-primary-foreground text-xs font-medium">
