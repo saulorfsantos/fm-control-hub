@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useProcess } from "@/contexts/ProcessContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,69 +20,74 @@ interface Transaction {
   data: string;
   descricao: string;
   documento: string;
-  company: string;
+  empresa: string;
   debito: number;
   credito: number;
+  programa_label: string;
+  periodo: string;
 }
 
-const mockTransactions: Transaction[] = [
-  { id: "1", data: "2025-02-10", descricao: "Repasse FNDE — Nota de Empenho nº 2025NE000412", documento: "NE-000412", company: "FNDE", debito: 0, credito: 37800.0 },
-  { id: "2", data: "2025-02-28", descricao: "Rendimento de aplicação financeira", documento: "APL-0021", company: "BB S/A", debito: 0, credito: 112.45 },
-  { id: "3", data: "2025-03-05", descricao: "Pgto NF 1021 — Distribuidora Alimentos Sabor & Vida Ltda", documento: "NF-1021", company: "DASV Ltda", debito: 8450.0, credito: 0 },
-  { id: "4", data: "2025-03-12", descricao: "Pgto NF 1034 — Hortifruti Colheita Verde ME", documento: "NF-1034", company: "HCV ME", debito: 5230.0, credito: 0 },
-  { id: "5", data: "2025-03-20", descricao: "Pgto NF 1048 — Panificadora Pão Dourado Ltda", documento: "NF-1048", company: "PPD Ltda", debito: 3180.0, credito: 0 },
-  { id: "6", data: "2025-04-02", descricao: "Repasse FNDE — Nota de Empenho nº 2025NE000587", documento: "NE-000587", company: "FNDE", debito: 0, credito: 37800.0 },
-  { id: "7", data: "2025-04-10", descricao: "Pgto NF 1102 — Frigorífico Boi Nobre S/A", documento: "NF-1102", company: "FBN S/A", debito: 12600.0, credito: 0 },
-  { id: "8", data: "2025-04-18", descricao: "Pgto NF 1115 — Cooperativa Agrícola Raízes do Campo", documento: "NF-1115", company: "CARC", debito: 6950.0, credito: 0 },
-];
+interface SchoolBalance {
+  name: string;
+  total_credito: number;
+  total_debito: number;
+  saldo: number;
+  ultima_movimentacao: string;
+  qtd_transacoes: number;
+}
 
 const fmt = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const fmtDate = (d: string) => {
-  const [y, m, day] = d.split("-");
+  if (!d) return "";
+  const datePart = d.split("T")[0];
+  const [y, m, day] = datePart.split("-");
   return `${day}/${m}/${y}`;
 };
 
 const EscolaFinanceiro = () => {
-  const { activeProcess } = useProcess();
+  const { profile } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [balance, setBalance] = useState<SchoolBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setTransactions(mockTransactions);
+    async function fetchData() {
+      if (!profile?.school_id) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      const [balanceRes, transactionsRes] = await Promise.all([
+        supabase
+          .from("school_balances")
+          .select("name, total_credito, total_debito, saldo, ultima_movimentacao, qtd_transacoes")
+          .eq("school_id", profile.school_id)
+          .maybeSingle(),
+        supabase
+          .from("school_transactions_with_program")
+          .select("id, data, descricao, documento, empresa, debito, credito, programa_label, periodo")
+          .eq("school_id", profile.school_id)
+          .order("data", { ascending: false })
+      ]);
+
+      if (balanceRes.data) {
+        setBalance(balanceRes.data);
+      }
+      
+      if (transactionsRes.data) {
+        setTransactions(transactionsRes.data);
+      }
+
       setLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, []);
+    }
 
-  // --- Placeholder: Supabase Realtime subscription ---
-  // useEffect(() => {
-  //   const channel = supabase
-  //     .channel('transactions-updates')
-  //     .on(
-  //       'postgres_changes',
-  //       { event: 'INSERT', schema: 'public', table: 'transactions', filter: `process_id=eq.${activeProcess?.id}` },
-  //       (payload) => {
-  //         setTransactions(prev => [...prev, payload.new as Transaction]);
-  //       }
-  //     )
-  //     .subscribe();
-  //   return () => { supabase.removeChannel(channel); };
-  // }, [activeProcess?.id]);
-
-  // Compute running balance
-  const rows = transactions.map((tx, i) => {
-    const prevBalance = transactions.slice(0, i).reduce((acc, t) => acc + t.credito - t.debito, 0);
-    const balance = prevBalance + tx.credito - tx.debito;
-    return { ...tx, balance };
-  });
-
-  const totalCredits = transactions.reduce((s, t) => s + t.credito, 0);
-  const totalDebits = transactions.reduce((s, t) => s + t.debito, 0);
-  const currentBalance = totalCredits - totalDebits;
+    fetchData();
+  }, [profile?.school_id]);
 
   const handleExport = async () => {
     setExporting(true);
@@ -106,13 +111,27 @@ const EscolaFinanceiro = () => {
     );
   }
 
+  if (!profile?.school_id) {
+    return (
+      <div className="flex h-[400px] items-center justify-center rounded-xl border border-dashed">
+        <p className="text-muted-foreground">Nenhuma escola vinculada ao seu perfil.</p>
+      </div>
+    );
+  }
+
+  const currentBalance = balance?.saldo || 0;
+  const totalCredits = balance?.total_credito || 0;
+  const totalDebits = balance?.total_debito || 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-2xl font-heading font-bold text-foreground">Movimentação Financeira</h2>
-          <p className="text-sm text-muted-foreground mt-1">{activeProcess?.label} — Extrato consolidado</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {balance?.name || "Escola"} — {balance?.ultima_movimentacao ? `Última movimentação em ${fmtDate(balance.ultima_movimentacao)}` : "Extrato consolidado"}
+          </p>
         </div>
         <Button
           variant="outline"
@@ -175,46 +194,52 @@ const EscolaFinanceiro = () => {
                 <TableHead className="w-[100px]">Data</TableHead>
                 <TableHead>Histórico</TableHead>
                 <TableHead className="w-[110px]">Doc. Nº</TableHead>
-                <TableHead className="w-[110px]">Empresa</TableHead>
+                <TableHead className="w-[130px]">Empresa</TableHead>
+                <TableHead className="w-[130px]">Programa</TableHead>
                 <TableHead className="text-right w-[130px]">Débito</TableHead>
                 <TableHead className="text-right w-[130px]">Crédito</TableHead>
-                <TableHead className="text-right w-[140px]">Saldo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className={cn(row.credito > 0 && "bg-status-ok/[0.04]")}
-                >
-                  <TableCell className="font-mono text-xs">{fmtDate(row.data)}</TableCell>
-                  <TableCell className="text-sm">{row.descricao}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{row.documento}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{row.company}</TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {row.debito > 0 ? fmt(row.debito) : "—"}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {row.credito > 0 ? fmt(row.credito) : "—"}
-                  </TableCell>
-                  <TableCell className={cn("text-right font-mono text-sm font-medium", row.balance >= 0 ? "text-status-ok" : "text-destructive")}>
-                    {fmt(row.balance)}
+              {transactions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                    Nenhuma movimentação encontrada
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                transactions.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className={cn(row.credito > 0 && "bg-status-ok/[0.04]")}
+                  >
+                    <TableCell className="font-mono text-xs">{fmtDate(row.data)}</TableCell>
+                    <TableCell className="text-sm">{row.descricao}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{row.documento}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{row.empresa}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{row.programa_label}</TableCell>
+                    <TableCell className="text-right font-mono text-sm">
+                      {row.debito > 0 ? fmt(row.debito) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-sm">
+                      {row.credito > 0 ? fmt(row.credito) : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
 
               {/* Totalizador */}
-              <TableRow className="border-t-2 border-border bg-muted/50 font-bold">
-                <TableCell />
-                <TableCell className="text-sm font-semibold">TOTAL</TableCell>
-                <TableCell />
-                <TableCell />
-                <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalDebits)}</TableCell>
-                <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalCredits)}</TableCell>
-                <TableCell className={cn("text-right font-mono text-sm font-bold", currentBalance >= 0 ? "text-status-ok" : "text-destructive")}>
-                  {fmt(currentBalance)}
-                </TableCell>
-              </TableRow>
+              {transactions.length > 0 && (
+                <TableRow className="border-t-2 border-border bg-muted/50 font-bold">
+                  <TableCell />
+                  <TableCell className="text-sm font-semibold">TOTAL</TableCell>
+                  <TableCell />
+                  <TableCell />
+                  <TableCell />
+                  <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalDebits)}</TableCell>
+                  <TableCell className="text-right font-mono text-sm font-bold">{fmt(totalCredits)}</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
