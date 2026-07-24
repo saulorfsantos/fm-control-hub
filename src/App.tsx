@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProcessProvider } from "@/contexts/ProcessContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import DashboardLayout from "./components/DashboardLayout";
 import AdminLayout from "./components/AdminLayout";
@@ -25,10 +26,11 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Navigate to="/admin/escolas" replace />} />
-              <Route path="/login" element={<Navigate to="/admin/escolas" replace />} />
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/login" element={<Login />} />
               <Route path="/escola" element={<DashboardLayout />}>
                 <Route path="dashboard" element={<EscolaDashboard />} />
                 <Route path="checklist" element={<EscolaChecklist />} />
@@ -45,7 +47,8 @@ const App = () => (
               <Route path="/dashboard" element={<Navigate to="/escola/dashboard" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
+            </BrowserRouter>
+          </AuthProvider>
         </TooltipProvider>
       </ProcessProvider>
     </ThemeProvider>

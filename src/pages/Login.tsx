@@ -4,16 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Landmark } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: integrate Supabase Auth
-    navigate("/dashboard");
+    setIsLoggingIn(true);
+    const { error, profile } = await signIn(email, password);
+    setIsLoggingIn(false);
+
+    if (error) {
+      toast.error(error.message || "Erro ao fazer login");
+      return;
+    }
+
+    if (profile?.role === "forte_mais_admin") {
+      navigate("/admin/escolas");
+    } else if (profile?.role === "school_user") {
+      navigate("/escola/dashboard");
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   return (
@@ -96,8 +114,8 @@ const Login = () => {
               </div>
             </div>
 
-            <Button type="submit" variant="brand" className="w-full h-11 text-base">
-              Entrar
+            <Button type="submit" variant="brand" className="w-full h-11 text-base" disabled={isLoggingIn}>
+              {isLoggingIn ? "Entrando..." : "Entrar"}
             </Button>
           </form>
 
