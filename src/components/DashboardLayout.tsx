@@ -14,12 +14,14 @@ import {
   X,
   Landmark,
   School,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { ClipboardCheck, Receipt, Users } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { label: "Financeiro", icon: Receipt, path: "/escola/financeiro" },
@@ -30,6 +32,7 @@ const DashboardLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -176,6 +179,9 @@ const DashboardLayout = () => {
                   JC
                 </AvatarFallback>
               </Avatar>
+              <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate('/login'); }}>
+                <LogOut className="w-4 h-4 text-muted-foreground" />
+              </Button>
             </div>
           </header>
 

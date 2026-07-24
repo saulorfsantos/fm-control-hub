@@ -13,11 +13,13 @@ import {
   X,
   Landmark,
   Shield,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { label: "Escolas", icon: Building2, path: "/admin/escolas" },
@@ -28,6 +30,7 @@ const AdminLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -153,6 +156,9 @@ const AdminLayout = () => {
                   AD
                 </AvatarFallback>
               </Avatar>
+              <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate('/login'); }}>
+                <LogOut className="w-4 h-4 text-muted-foreground" />
+              </Button>
             </div>
           </header>
 
