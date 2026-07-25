@@ -30,6 +30,7 @@ interface Transaction {
 
 interface SchoolBalance {
   name: string;
+  cnpj: string;
   total_credito: number;
   total_debito: number;
   saldo: number;
@@ -52,7 +53,6 @@ const EscolaFinanceiro = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState<SchoolBalance | null>(null);
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -68,7 +68,7 @@ const EscolaFinanceiro = () => {
       const [balanceRes, transactionsRes] = await Promise.all([
         supabase
           .from("school_balances")
-          .select("name, total_credito, total_debito, saldo, ultima_movimentacao, qtd_transacoes")
+          .select("name, cnpj, total_credito, total_debito, saldo, ultima_movimentacao, qtd_transacoes")
           .eq("school_id", profile.school_id)
           .maybeSingle(),
         supabase
@@ -92,12 +92,8 @@ const EscolaFinanceiro = () => {
     fetchData();
   }, [profile?.school_id]);
 
-  const handleExport = async () => {
-    setExporting(true);
-    // Placeholder: generate PDF via n8n or client-side
-    await new Promise((r) => setTimeout(r, 2000));
-    setExporting(false);
-    toast({ title: "Demonstrativo exportado!", description: "O PDF será baixado em instantes." });
+  const handleExport = () => {
+    window.print();
   };
 
   if (loading) {
@@ -133,9 +129,57 @@ const EscolaFinanceiro = () => {
   const hasFilter = Boolean(startDate || endDate);
 
   return (
-    <div className="space-y-6">
+    <div id="print-area" className="space-y-6">
+      <style>{`
+        @media print {
+          @page { margin: 1cm; }
+          body * {
+            visibility: hidden;
+          }
+          #print-area, #print-area * {
+            visibility: visible;
+          }
+          #print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Print-only Header */}
+      <div className="hidden print:block space-y-6 mb-8">
+        <h1 className="text-xl font-bold text-center uppercase tracking-wider text-black">Demonstrativo Financeiro</h1>
+        <div className="border border-border p-4 rounded-lg text-sm grid grid-cols-2 gap-4 text-black">
+          <div>
+            <p className="text-muted-foreground text-xs uppercase">Escola</p>
+            <p className="font-medium text-base">{balance?.name}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs uppercase">CNPJ</p>
+            <p className="font-medium text-base">{balance?.cnpj}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs uppercase">Período</p>
+            <p className="font-medium text-base">
+              {hasFilter 
+                ? `${startDate ? fmtDate(startDate) : "Início"} a ${endDate ? fmtDate(endDate) : "Hoje"}` 
+                : "Completo"}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs uppercase">Saldo Atual</p>
+            <p className="font-medium text-base">{fmt(currentBalance)}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-print">
         <div>
           <h2 className="text-2xl font-heading font-bold text-foreground">Movimentação Financeira</h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -146,15 +190,14 @@ const EscolaFinanceiro = () => {
           variant="outline"
           className="border-primary text-primary hover:bg-primary/10 shrink-0"
           onClick={handleExport}
-          disabled={exporting}
         >
-          {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          <Download className="w-4 h-4" />
           Exportar demonstrativo PDF
         </Button>
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm no-print">
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <span className="text-sm font-medium text-foreground">De:</span>
@@ -184,7 +227,7 @@ const EscolaFinanceiro = () => {
       </div>
 
       {/* Summary chips */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 no-print">
         <Card className="shadow-none border-brand-orange/20 bg-brand-orange/5">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="w-10 h-10 rounded-lg bg-brand-orange/10 flex items-center justify-center">
