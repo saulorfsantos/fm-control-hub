@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -52,6 +53,8 @@ const EscolaFinanceiro = () => {
   const [balance, setBalance] = useState<SchoolBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -120,8 +123,18 @@ const EscolaFinanceiro = () => {
   }
 
   const currentBalance = balance?.saldo || 0;
-  const totalCredits = balance?.total_credito || 0;
-  const totalDebits = balance?.total_debito || 0;
+
+  const filteredTransactions = transactions.filter((t) => {
+    if (!startDate && !endDate) return true;
+    const tDate = t.data.split("T")[0];
+    if (startDate && tDate < startDate) return false;
+    if (endDate && tDate > endDate) return false;
+    return true;
+  });
+
+  const totalCredits = filteredTransactions.reduce((acc, t) => acc + (t.credito || 0), 0);
+  const totalDebits = filteredTransactions.reduce((acc, t) => acc + (t.debito || 0), 0);
+  const hasFilter = Boolean(startDate || endDate);
 
   return (
     <div className="space-y-6">
@@ -144,6 +157,36 @@ const EscolaFinanceiro = () => {
         </Button>
       </div>
 
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-sm font-medium text-foreground">De:</span>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full sm:w-40 h-9"
+            />
+          </div>
+          <span className="text-muted-foreground hidden sm:inline">até</span>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-sm font-medium text-foreground sm:hidden">Até:</span>
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full sm:w-40 h-9"
+            />
+          </div>
+        </div>
+        {hasFilter && (
+          <Button variant="ghost" size="sm" onClick={() => { setStartDate(""); setEndDate(""); }} className="h-9 px-3 w-full sm:w-auto text-muted-foreground hover:text-foreground">
+            Limpar
+          </Button>
+        )}
+      </div>
+
       {/* Summary chips */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="shadow-none border-brand-orange/20 bg-brand-orange/5">
@@ -152,7 +195,7 @@ const EscolaFinanceiro = () => {
               <TrendingUp className="w-5 h-5 text-brand-orange" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total de Créditos</p>
+              <p className="text-xs text-muted-foreground">Total de Créditos {hasFilter && <span className="text-[10px] font-medium text-brand-orange/70">(no período)</span>}</p>
               <p className="text-lg font-mono font-bold text-brand-orange">{fmt(totalCredits)}</p>
             </div>
           </CardContent>
@@ -164,7 +207,7 @@ const EscolaFinanceiro = () => {
               <TrendingDown className="w-5 h-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total de Débitos</p>
+              <p className="text-xs text-muted-foreground">Total de Débitos {hasFilter && <span className="text-[10px] font-medium text-muted-foreground/70">(no período)</span>}</p>
               <p className="text-lg font-mono font-bold text-muted-foreground">{fmt(totalDebits)}</p>
             </div>
           </CardContent>
@@ -201,14 +244,14 @@ const EscolaFinanceiro = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.length === 0 ? (
+              {filteredTransactions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
-                    Nenhuma movimentação encontrada
+                    {hasFilter ? "Nenhuma movimentação no período" : "Nenhuma movimentação encontrada"}
                   </TableCell>
                 </TableRow>
               ) : (
-                transactions.map((row) => (
+                filteredTransactions.map((row) => (
                   <TableRow
                     key={row.id}
                     className={cn(row.credito > 0 && "bg-status-ok/[0.04]")}
@@ -229,7 +272,7 @@ const EscolaFinanceiro = () => {
               )}
 
               {/* Totalizador */}
-              {transactions.length > 0 && (
+              {filteredTransactions.length > 0 && (
                 <TableRow className="border-t-2 border-border bg-muted/50 font-bold">
                   <TableCell />
                   <TableCell className="text-sm font-semibold">TOTAL</TableCell>
