@@ -28,7 +28,7 @@ const Login = () => {
     if (profile?.role === "forte_mais_admin") {
       navigate("/admin/escolas");
     } else if (profile?.role === "school_user") {
-      navigate("/escola/dashboard");
+      navigate("/escola/financeiro");
     } else {
       navigate("/dashboard");
     }

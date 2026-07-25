@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import ProcessSelector from "@/components/ProcessSelector";
 import { useTheme } from "@/components/ThemeProvider";
 import { supabase } from "@/lib/supabase";
 import {
@@ -196,9 +195,8 @@ const DashboardLayout = () => {
             </Button>
 
             <h1 className="text-lg font-heading font-semibold text-foreground truncate">
-              Dashboard
+              Financeiro
             </h1>
-            <ProcessSelector />
 
             <div className="ml-auto flex items-center gap-2">
               <Button variant="ghost" size="icon" onClick={toggleTheme}>

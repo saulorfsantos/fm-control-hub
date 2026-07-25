@@ -26,7 +26,7 @@ const RootRedirect = () => {
   if (profile?.role === 'forte_mais_admin') {
     return <Navigate to="/admin/escolas" replace />;
   } else if (profile?.role === 'school_user') {
-    return <Navigate to="/escola/dashboard" replace />;
+    return <Navigate to="/escola/financeiro" replace />;
   }
   
   return <Navigate to="/login" replace />;
@@ -49,11 +49,11 @@ const App = () => (
                 
                 <Route element={<ProtectedRoute allowedRoles={['school_user']} />}>
                   <Route path="/escola" element={<DashboardLayout />}>
-                    <Route path="dashboard" element={<EscolaDashboard />} />
-                    <Route path="checklist" element={<EscolaChecklist />} />
+                    <Route path="dashboard" element={<Navigate to="financeiro" replace />} />
+                    <Route path="checklist" element={<Navigate to="financeiro" replace />} />
                     <Route path="financeiro" element={<EscolaFinanceiro />} />
-                    <Route path="conselho" element={<EscolaConselho />} />
-                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="conselho" element={<Navigate to="financeiro" replace />} />
+                    <Route index element={<Navigate to="financeiro" replace />} />
                   </Route>
                 </Route>
 
@@ -65,7 +65,7 @@ const App = () => (
                   </Route>
                 </Route>
               {/* Keep old route for compat */}
-              <Route path="/dashboard" element={<Navigate to="/escola/dashboard" replace />} />
+              <Route path="/dashboard" element={<Navigate to="/escola/financeiro" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </BrowserRouter>
