@@ -125,11 +125,7 @@ const EscolaFinanceiro = () => {
   const currentBalance = balance?.saldo || 0;
 
   const filteredTransactions = transactions.filter((t) => {
-    if (!startDate && !endDate) return true;
-    const tDate = t.data.split("T")[0];
-    if (startDate && tDate < startDate) return false;
-    if (endDate && tDate > endDate) return false;
-    return true;
+    return (!startDate || t.data >= startDate) && (!endDate || t.data <= endDate);
   });
 
   const totalCredits = filteredTransactions.reduce((acc, t) => acc + (t.credito || 0), 0);
