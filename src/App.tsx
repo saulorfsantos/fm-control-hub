@@ -49,11 +49,11 @@ const App = () => (
                 
                 <Route element={<ProtectedRoute allowedRoles={['school_user']} />}>
                   <Route path="/escola" element={<DashboardLayout />}>
-                    <Route path="dashboard" element={<Navigate to="financeiro" replace />} />
-                    <Route path="checklist" element={<Navigate to="financeiro" replace />} />
+                    <Route path="dashboard" element={<Navigate to="/escola/financeiro" replace />} />
+                    <Route path="checklist" element={<Navigate to="/escola/financeiro" replace />} />
                     <Route path="financeiro" element={<EscolaFinanceiro />} />
-                    <Route path="conselho" element={<Navigate to="financeiro" replace />} />
-                    <Route index element={<Navigate to="financeiro" replace />} />
+                    <Route path="conselho" element={<Navigate to="/escola/financeiro" replace />} />
+                    <Route index element={<Navigate to="/escola/financeiro" replace />} />
                   </Route>
                 </Route>
 
