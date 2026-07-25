@@ -1,3 +1,5 @@
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -93,7 +95,63 @@ const EscolaFinanceiro = () => {
   }, [profile?.school_id]);
 
   const handleExport = () => {
-    window.print();
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("Demonstrativo Financeiro", 14, 20);
+
+    doc.setFontSize(10);
+    doc.text(`Escola: ${balance?.name || "N/A"}`, 14, 30);
+    doc.text(`CNPJ: ${balance?.cnpj || "N/A"}`, 14, 36);
+    
+    const periodText = hasFilter 
+      ? `Período: ${startDate ? fmtDate(startDate) : "Início"} a ${endDate ? fmtDate(endDate) : "Hoje"}`
+      : "Período: completo";
+    doc.text(periodText, 14, 42);
+    doc.text(`Saldo Atual: ${fmt(currentBalance)}`, 14, 48);
+
+    const tableData = filteredTransactions.map((t) => [
+      fmtDate(t.data),
+      t.descricao,
+      t.documento || "",
+      t.empresa || "",
+      t.programa_label || "",
+      t.debito > 0 ? fmt(t.debito) : "—",
+      t.credito > 0 ? fmt(t.credito) : "—"
+    ]);
+
+    if (filteredTransactions.length > 0) {
+      tableData.push([
+        "",
+        "TOTAL",
+        "",
+        "",
+        "",
+        fmt(totalDebits),
+        fmt(totalCredits)
+      ]);
+    }
+
+    autoTable(doc, {
+      startY: 54,
+      head: [["Data", "Histórico", "Doc. Nº", "Empresa", "Programa", "Débito", "Crédito"]],
+      body: tableData,
+      theme: "striped",
+      styles: { fontSize: 8 },
+      columnStyles: {
+        5: { halign: "right" },
+        6: { halign: "right" }
+      },
+      didParseCell: (data) => {
+        if (data.section === "body" && data.row.index === tableData.length - 1 && filteredTransactions.length > 0) {
+          data.cell.styles.fontStyle = "bold";
+        }
+      }
+    });
+
+    const dateToday = new Date().toISOString().split("T")[0];
+    const schoolNameStr = balance?.name ? balance.name.replace(/[^a-z0-9]/gi, "_").toLowerCase() : "escola";
+    doc.save(`demonstrativo-${schoolNameStr}-${dateToday}.pdf`);
   };
 
   if (loading) {
@@ -129,57 +187,9 @@ const EscolaFinanceiro = () => {
   const hasFilter = Boolean(startDate || endDate);
 
   return (
-    <div id="print-area" className="space-y-6">
-      <style>{`
-        @media print {
-          @page { margin: 1cm; }
-          body * {
-            visibility: hidden;
-          }
-          #print-area, #print-area * {
-            visibility: visible;
-          }
-          #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
-
-      {/* Print-only Header */}
-      <div className="hidden print:block space-y-6 mb-8">
-        <h1 className="text-xl font-bold text-center uppercase tracking-wider text-black">Demonstrativo Financeiro</h1>
-        <div className="border border-border p-4 rounded-lg text-sm grid grid-cols-2 gap-4 text-black">
-          <div>
-            <p className="text-muted-foreground text-xs uppercase">Escola</p>
-            <p className="font-medium text-base">{balance?.name}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs uppercase">CNPJ</p>
-            <p className="font-medium text-base">{balance?.cnpj}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs uppercase">Período</p>
-            <p className="font-medium text-base">
-              {hasFilter 
-                ? `${startDate ? fmtDate(startDate) : "Início"} a ${endDate ? fmtDate(endDate) : "Hoje"}` 
-                : "Completo"}
-            </p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs uppercase">Saldo Atual</p>
-            <p className="font-medium text-base">{fmt(currentBalance)}</p>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-print">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-2xl font-heading font-bold text-foreground">Movimentação Financeira</h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -197,7 +207,7 @@ const EscolaFinanceiro = () => {
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm no-print">
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm">
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <span className="text-sm font-medium text-foreground">De:</span>
@@ -227,7 +237,7 @@ const EscolaFinanceiro = () => {
       </div>
 
       {/* Summary chips */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 no-print">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="shadow-none border-brand-orange/20 bg-brand-orange/5">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="w-10 h-10 rounded-lg bg-brand-orange/10 flex items-center justify-center">
