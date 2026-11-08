@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .select('id, role, school_id, name')
         .eq('id', sessionToLoad.user.id)
         .single();
-      
+
       if (mounted) {
         if (!error && data) {
           setProfile(data as UserProfile);
@@ -93,9 +93,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       if (profileError) {
-         return { error: profileError };
+        return { error: profileError };
       }
-      
+
       return { profile: profileData as UserProfile };
     }
 
